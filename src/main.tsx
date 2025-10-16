@@ -25,6 +25,10 @@ const router = createBrowserRouter([
       { path: '/fale-conosco', lazy: () => import('./pages/static/Contact').then(m => ({ Component: m.default })) },
     ],
   },
+  {
+    path: '*',
+    lazy: () => import('./pages/NotFound').then(m => ({ Component: m.default }))
+  }
 ])
 
 createRoot(document.getElementById('root')!).render(
