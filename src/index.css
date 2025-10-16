@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* Base defaults aligned with Tailwind */
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply antialiased text-zinc-900 bg-white;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-white shadow-sm transition-all duration-200 hover:scale-105;
+    background-color: #ff6b00;
+  }
+  .btn-primary:hover {
+    background-color: #db5900;
+  }
+  .btn-primary:active {
+    background-color: #b74800;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-md border px-4 py-2 transition-all duration-200 hover:scale-105;
+    border-color: #ff6b00;
+    color: #ff6b00;
+  }
+  .btn-outline:hover {
+    background-color: #fff3e8;
+  }
+  .card {
+    @apply rounded-lg border bg-white shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105;
+  }
+  .fade-in {
+    opacity: 0;
+    animation: fadeIn 0.3s ease-in-out forwards;
+  }
+  .slide-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.3s ease-in-out forwards;
+  }
+  .skeleton {
+    @apply animate-pulse bg-zinc-200 rounded;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
