@@ -3,7 +3,6 @@ import { TireFinder } from '../components/TireFinder'
 import { PromoBanners } from '../components/PromoBanners'
 import { useWishlist } from '../store/wishlist'
 import { Link } from 'react-router-dom'
-import { useState, useEffect, useCallback } from 'react'
 import { LazyImage } from '../components/LazyImage'
 
 const BASE_PRODUCTS = [
@@ -28,56 +27,11 @@ const CATEGORY_PRODUCTS = {
   ],
 }
 
-const PRODUCT_CATEGORIES = [
-  'pneu', 'oleo', 'filtro', 'freio', 'suspensao', 'motor', 'transmissao', 'eletrico'
-]
-
-function generateMoreProducts(page: number) {
-  const products = []
-  for (let i = 0; i < 8; i++) {
-    const category = PRODUCT_CATEGORIES[Math.floor(Math.random() * PRODUCT_CATEGORIES.length)]
-    const id = `${category}-${page}-${i}`
-    products.push({
-      id,
-      name: `${category.charAt(0).toUpperCase() + category.slice(1)} ${Math.floor(Math.random() * 100) + 1}`,
-      price: Math.floor(Math.random() * 500) + 50,
-      image: `https://picsum.photos/seed/${id}/200/200`,
-      rating: 3.5 + Math.random() * 1.5,
-      reviews: Math.floor(Math.random() * 50) + 5,
-      category
-    })
-  }
-  return products
-}
 
 export default function Component() {
   const addItem = useCartStore((s) => s.addItem)
   const toggleWish = useWishlist((s) => s.toggle)
   const hasWish = useWishlist((s) => s.has)
-  const [products, setProducts] = useState(BASE_PRODUCTS)
-  const [loading, setLoading] = useState(false)
-  const [page, setPage] = useState(1)
-
-  const loadMoreProducts = useCallback(async () => {
-    if (loading) return
-    setLoading(true)
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    const newProducts = generateMoreProducts(page)
-    setProducts(prev => [...prev, ...newProducts])
-    setPage(prev => prev + 1)
-    setLoading(false)
-  }, [loading, page])
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
-        loadMoreProducts()
-      }
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [loadMoreProducts])
 
   return (
     <div className="py-4 fade-in">
@@ -232,7 +186,7 @@ export default function Component() {
       <div className="mt-12">
         <h2 className="text-lg font-semibold mb-4">Todos os Produtos</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-          {products.map((p, index) => (
+          {BASE_PRODUCTS.map((p, index) => (
             <div key={p.id} className="card p-3 group hover:shadow-lg transition-all duration-300 slide-up" style={{ animationDelay: `${index * 100}ms` }}>
               <Link to={`/produto/${p.id}`} className="block">
                 <LazyImage 
@@ -266,11 +220,6 @@ export default function Component() {
             </div>
           ))}
         </div>
-        {loading && (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#ff6b00' }}></div>
-          </div>
-        )}
       </div>
     </div>
   )

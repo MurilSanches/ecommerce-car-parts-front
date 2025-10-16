@@ -12,8 +12,8 @@ export function MiniCartButton() {
         <button className="btn-primary">Carrinho ({count})</button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed right-0 top-0 h-dvh w-full max-w-md bg-white shadow-xl flex flex-col">
+        <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+        <Dialog.Content className="fixed right-0 top-0 h-dvh w-full max-w-md bg-white shadow-xl flex flex-col z-50">
           <div className="flex items-center justify-between border-b px-4 py-3 bg-brand-50">
             <Dialog.Title className="text-lg font-semibold">Seu carrinho</Dialog.Title>
             <Dialog.Close className="text-zinc-500 hover:text-brand transition-colors">Fechar</Dialog.Close>
@@ -31,9 +31,9 @@ export function MiniCartButton() {
                   )}
                   <div className="flex-1">
                     <div className="text-sm font-medium">{it.name}</div>
-                    <div className="text-xs text-zinc-500">Qtd: {it.qty}</div>
+                    <div className="text-xs text-zinc-500">Qtd: {it.quantity}</div>
                   </div>
-                  <div className="text-sm font-semibold">R$ {(it.price * it.qty).toFixed(2)}</div>
+                  <div className="text-sm font-semibold">R$ {(it.price * it.quantity).toFixed(2)}</div>
                 </div>
               ))
             )}

@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { LazyImage } from '../components/LazyImage'
 import { useCartStore } from '../store/cart'
 import { useWishlist } from '../store/wishlist'
 
-const MOCK_PRODUCTS = [
+const BASE_PRODUCTS = [
   { id: 'pneu-aro-16', name: 'Pneu Aro 16 205/55R16', price: 399.9, image: 'https://picsum.photos/seed/pneu/200/200', rating: 4.6, reviews: 23, category: 'pneus', brand: 'Pirelli' },
   { id: 'oleo-5w30', name: 'Óleo Sintético 5W30 1L', price: 49.9, image: 'https://picsum.photos/seed/oleo/200/200', rating: 4.4, reviews: 15, category: 'oleos', brand: 'Castrol' },
   { id: 'filtro-ar', name: 'Filtro de Ar Motor', price: 59.9, image: 'https://picsum.photos/seed/filtro/200/200', rating: 4.2, reviews: 8, category: 'filtros', brand: 'Mann' },
@@ -14,6 +14,29 @@ const MOCK_PRODUCTS = [
   { id: 'disco-freio', name: 'Disco de Freio Dianteiro', price: 189.9, image: 'https://picsum.photos/seed/disco/200/200', rating: 4.4, reviews: 14, category: 'freios', brand: 'Brembo' },
   { id: 'amortecedor', name: 'Amortecedor Dianteiro', price: 299.9, image: 'https://picsum.photos/seed/amortecedor/200/200', rating: 4.2, reviews: 9, category: 'suspensao', brand: 'Monroe' },
 ]
+
+const PRODUCT_CATEGORIES = [
+  'pneu', 'oleo', 'filtro', 'freio', 'suspensao', 'motor', 'transmissao', 'eletrico'
+]
+
+function generateMoreProducts(page: number) {
+  const products = []
+  for (let i = 0; i < 8; i++) {
+    const category = PRODUCT_CATEGORIES[Math.floor(Math.random() * PRODUCT_CATEGORIES.length)]
+    const id = `${category}-${page}-${i}`
+    products.push({
+      id,
+      name: `${category.charAt(0).toUpperCase() + category.slice(1)} ${Math.floor(Math.random() * 100) + 1}`,
+      price: Math.floor(Math.random() * 500) + 50,
+      image: `https://picsum.photos/seed/${id}/200/200`,
+      rating: 3.5 + Math.random() * 1.5,
+      reviews: Math.floor(Math.random() * 50) + 5,
+      category,
+      brand: ['Pirelli', 'Michelin', 'Castrol', 'Shell', 'Mann', 'Brembo', 'Monroe'][Math.floor(Math.random() * 7)]
+    })
+  }
+  return products
+}
 
 const BRANDS = ['Pirelli', 'Michelin', 'Bridgestone', 'Castrol', 'Shell', 'Mann', 'Brembo', 'Monroe']
 const CATEGORIES = [
@@ -34,6 +57,10 @@ export default function Component() {
   const toggleWish = useWishlist((s) => s.toggle)
   const hasWish = useWishlist((s) => s.has)
   
+  const [products, setProducts] = useState(BASE_PRODUCTS)
+  const [loading, setLoading] = useState(false)
+  const [page, setPage] = useState(1)
+  
   const searchParams = new URLSearchParams(location.search)
   const q = searchParams.get('q') ?? ''
   const categoria = searchParams.get('categoria') ?? ''
@@ -44,6 +71,27 @@ export default function Component() {
   const min = searchParams.get('min') ?? ''
   const max = searchParams.get('max') ?? ''
   const sort = searchParams.get('sort') ?? 'relevance'
+
+  const loadMoreProducts = useCallback(async () => {
+    if (loading) return
+    setLoading(true)
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    const newProducts = generateMoreProducts(page)
+    setProducts(prev => [...prev, ...newProducts])
+    setPage(prev => prev + 1)
+    setLoading(false)
+  }, [loading, page])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
+        loadMoreProducts()
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [loadMoreProducts])
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(location.search)
@@ -73,7 +121,7 @@ export default function Component() {
   }
 
   // Filter products based on search parameters
-  const filteredProducts = MOCK_PRODUCTS.filter(product => {
+  const filteredProducts = products.filter(product => {
     if (categoria && product.category !== categoria) return false
     if (marca && product.brand !== marca) return false
     if (min && product.price < parseFloat(min)) return false

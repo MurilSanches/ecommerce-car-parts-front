@@ -5,14 +5,15 @@ export type CartItem = {
   name: string
   price: number
   image?: string
-  qty: number
+  quantity: number
 }
 
 type CartState = {
   items: Record<string, CartItem>
-  addItem: (item: Omit<CartItem, 'qty'>, qty?: number) => void
+  addItem: (item: Omit<CartItem, 'quantity'>, qty?: number) => void
   removeItem: (id: string) => void
-  clear: () => void
+  updateQuantity: (id: string, quantity: number) => void
+  clearCart: () => void
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
@@ -20,11 +21,11 @@ export const useCartStore = create<CartState>((set, get) => ({
   addItem: (item, qty = 1) => {
     const prev = get().items
     const existing = prev[item.id]
-    const nextQty = (existing?.qty ?? 0) + qty
+    const nextQty = (existing?.quantity ?? 0) + qty
     set({
       items: {
         ...prev,
-        [item.id]: { ...item, qty: nextQty },
+        [item.id]: { ...item, quantity: nextQty },
       },
     })
   },
@@ -33,7 +34,18 @@ export const useCartStore = create<CartState>((set, get) => ({
     delete prev[id]
     set({ items: prev })
   },
-  clear: () => set({ items: {} }),
+  updateQuantity: (id, quantity) => {
+    if (quantity <= 0) {
+      get().removeItem(id)
+      return
+    }
+    const prev = { ...get().items }
+    if (prev[id]) {
+      prev[id] = { ...prev[id], quantity }
+      set({ items: prev })
+    }
+  },
+  clearCart: () => set({ items: {} }),
 }))
 
 export function selectCartList(state: CartState): CartItem[] {
@@ -41,11 +53,11 @@ export function selectCartList(state: CartState): CartItem[] {
 }
 
 export function selectCartCount(state: CartState): number {
-  return Object.values(state.items).reduce((acc, it) => acc + it.qty, 0)
+  return Object.values(state.items).reduce((acc, it) => acc + it.quantity, 0)
 }
 
 export function selectCartTotal(state: CartState): number {
-  return Object.values(state.items).reduce((acc, it) => acc + it.qty * it.price, 0)
+  return Object.values(state.items).reduce((acc, it) => acc + it.quantity * it.price, 0)
 }
 
 

@@ -25,7 +25,7 @@ function App() {
   const currentQ = new URLSearchParams(location.search).get('q') ?? ''
   return (
     <div className="min-h-dvh bg-white text-zinc-900">
-      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b shadow-sm">
+        <header className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-4 flex items-center gap-2 sm:gap-4">
           <Link to="/" className="text-xl font-bold" style={{ color: '#ff6b00' }}>AutoParts</Link>
           <DepartmentsMenu />
@@ -42,6 +42,7 @@ function App() {
             <Link className="hover:text-orange-500 transition-colors hidden sm:block" to="/">Ofertas</Link>
             <Link className="hover:text-orange-500 transition-colors hidden sm:block" to="/categorias">Categorias</Link>
             <Link className="hover:text-orange-500 transition-colors hidden sm:block" to="/buscar">Buscar</Link>
+            <Link className="hover:text-orange-500 transition-colors hidden sm:block" to="/favoritos">Favoritos</Link>
             {user ? (
               <div className="flex items-center gap-2">
                 <span className="text-zinc-700">Olá, {user.name}</span>

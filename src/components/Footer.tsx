@@ -2,43 +2,59 @@ import { Link } from 'react-router-dom'
 
 export function Footer() {
   return (
-    <footer className="border-t bg-brand-50">
-      <div className="mx-auto max-w-7xl px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+    <footer className="bg-zinc-800 text-zinc-300 py-8 mt-12">
+      <div className="mx-auto max-w-7xl px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-          <div className="font-semibold mb-2">Institucional</div>
-          <ul className="space-y-1 text-zinc-600">
-            <li><Link to="/quem-somos" className="hover:underline">Quem somos</Link></li>
-            <li><Link to="/privacidade" className="hover:underline">Política de privacidade</Link></li>
-            <li><Link to="/termos" className="hover:underline">Termos e condições</Link></li>
-          </ul>
-        </div>
-        <div>
-          <div className="font-semibold mb-2">Atendimento</div>
-          <ul className="space-y-1 text-zinc-600">
-            <li><Link to="/ajuda" className="hover:underline">Central de ajuda</Link></li>
-            <li><Link to="/contato" className="hover:underline">Fale conosco</Link></li>
-            <li><a href="#" className="hover:underline">Acompanhar pedido</a></li>
-          </ul>
-        </div>
-        <div>
-          <div className="font-semibold mb-2">Formas de pagamento</div>
-          <div className="grid grid-cols-4 gap-2">
-            {[1,2,3,4,5,6].map(i => (
-              <div key={i} className="h-6 rounded bg-zinc-200" />
-            ))}
+          <h3 className="text-lg font-semibold text-white mb-4">AutoParts</h3>
+          <p className="text-sm mb-4">Sua loja completa de peças automotivas com as melhores marcas e preços.</p>
+          <div className="flex gap-3">
+            <a href="#" className="text-zinc-400 hover:text-orange-500 transition-colors">Facebook</a>
+            <a href="#" className="text-zinc-400 hover:text-orange-500 transition-colors">Instagram</a>
+            <a href="#" className="text-zinc-400 hover:text-orange-500 transition-colors">Twitter</a>
           </div>
         </div>
+        
         <div>
-          <div className="font-semibold mb-2">Siga-nos</div>
-          <div className="flex gap-2">
-            {[1,2,3].map(i => (
-              <div key={i} className="h-8 w-8 rounded-full bg-zinc-200" />
-            ))}
-          </div>
+          <h3 className="text-lg font-semibold text-white mb-4">Institucional</h3>
+          <ul className="space-y-2 text-sm">
+            <li><Link to="/quem-somos" className="hover:text-orange-500 transition-colors">Quem Somos</Link></li>
+            <li><Link to="/politica-privacidade" className="hover:text-orange-500 transition-colors">Política de Privacidade</Link></li>
+            <li><Link to="/termos-de-uso" className="hover:text-orange-500 transition-colors">Termos de Uso</Link></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 className="text-lg font-semibold text-white mb-4">Ajuda</h3>
+          <ul className="space-y-2 text-sm">
+            <li><Link to="/central-de-ajuda" className="hover:text-orange-500 transition-colors">Central de Ajuda</Link></li>
+            <li><Link to="/fale-conosco" className="hover:text-orange-500 transition-colors">Fale Conosco</Link></li>
+            <li><Link to="/carrinho" className="hover:text-orange-500 transition-colors">Meus Pedidos</Link></li>
+            <li><Link to="/favoritos" className="hover:text-orange-500 transition-colors">Lista de Desejos</Link></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 className="text-lg font-semibold text-white mb-4">Produtos</h3>
+          <ul className="space-y-2 text-sm">
+            <li><Link to="/categorias" className="hover:text-orange-500 transition-colors">Categorias</Link></li>
+            <li><Link to="/buscar" className="hover:text-orange-500 transition-colors">Buscar Produtos</Link></li>
+            <li><Link to="/" className="hover:text-orange-500 transition-colors">Ofertas</Link></li>
+            <li><Link to="/carrinho" className="hover:text-orange-500 transition-colors">Carrinho</Link></li>
+          </ul>
         </div>
       </div>
-      <div className="border-t">
-        <div className="mx-auto max-w-7xl px-4 py-4 text-xs text-zinc-500">© {new Date().getFullYear()} AutoParts. Todos os direitos reservados.</div>
+      
+      <div className="border-t border-zinc-700 mt-8 pt-6">
+        <div className="mx-auto max-w-7xl px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-zinc-500">
+            &copy; {new Date().getFullYear()} AutoParts. Todos os direitos reservados.
+          </div>
+          <div className="flex gap-4 text-xs text-zinc-500">
+            <span>CNPJ: 12.345.678/0001-90</span>
+            <span>•</span>
+            <span>Razão Social: AutoParts Ltda</span>
+          </div>
+        </div>
       </div>
     </footer>
   )

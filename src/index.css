@@ -30,7 +30,7 @@
     background-color: #fff3e8;
   }
   .card {
-    @apply rounded-lg border bg-white shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105;
+    @apply rounded-lg border bg-white shadow-sm hover:shadow-md transition-all duration-300;
   }
   .fade-in {
     opacity: 0;
