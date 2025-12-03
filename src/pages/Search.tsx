@@ -3,40 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { LazyImage } from '../components/LazyImage'
 import { useCartStore } from '../store/cart'
 import { useWishlist } from '../store/wishlist'
-
-const BASE_PRODUCTS = [
-  { id: 'pneu-aro-16', name: 'Pneu Aro 16 205/55R16', price: 399.9, image: 'https://picsum.photos/seed/pneu/200/200', rating: 4.6, reviews: 23, category: 'pneus', brand: 'Pirelli' },
-  { id: 'oleo-5w30', name: 'Óleo Sintético 5W30 1L', price: 49.9, image: 'https://picsum.photos/seed/oleo/200/200', rating: 4.4, reviews: 15, category: 'oleos', brand: 'Castrol' },
-  { id: 'filtro-ar', name: 'Filtro de Ar Motor', price: 59.9, image: 'https://picsum.photos/seed/filtro/200/200', rating: 4.2, reviews: 8, category: 'filtros', brand: 'Mann' },
-  { id: 'pastilha-freio', name: 'Pastilha de Freio Dianteira', price: 129.9, image: 'https://picsum.photos/seed/freio/200/200', rating: 4.1, reviews: 12, category: 'freios', brand: 'Brembo' },
-  { id: 'pneu-aro-17', name: 'Pneu Aro 17 225/45R17', price: 459.9, image: 'https://picsum.photos/seed/pneu17/200/200', rating: 4.5, reviews: 18, category: 'pneus', brand: 'Michelin' },
-  { id: 'oleo-10w40', name: 'Óleo Mineral 10W40 1L', price: 39.9, image: 'https://picsum.photos/seed/oleo10w40/200/200', rating: 4.3, reviews: 12, category: 'oleos', brand: 'Shell' },
-  { id: 'disco-freio', name: 'Disco de Freio Dianteiro', price: 189.9, image: 'https://picsum.photos/seed/disco/200/200', rating: 4.4, reviews: 14, category: 'freios', brand: 'Brembo' },
-  { id: 'amortecedor', name: 'Amortecedor Dianteiro', price: 299.9, image: 'https://picsum.photos/seed/amortecedor/200/200', rating: 4.2, reviews: 9, category: 'suspensao', brand: 'Monroe' },
-]
-
-const PRODUCT_CATEGORIES = [
-  'pneu', 'oleo', 'filtro', 'freio', 'suspensao', 'motor', 'transmissao', 'eletrico'
-]
-
-function generateMoreProducts(page: number) {
-  const products = []
-  for (let i = 0; i < 8; i++) {
-    const category = PRODUCT_CATEGORIES[Math.floor(Math.random() * PRODUCT_CATEGORIES.length)]
-    const id = `${category}-${page}-${i}`
-    products.push({
-      id,
-      name: `${category.charAt(0).toUpperCase() + category.slice(1)} ${Math.floor(Math.random() * 100) + 1}`,
-      price: Math.floor(Math.random() * 500) + 50,
-      image: `https://picsum.photos/seed/${id}/200/200`,
-      rating: 3.5 + Math.random() * 1.5,
-      reviews: Math.floor(Math.random() * 50) + 5,
-      category,
-      brand: ['Pirelli', 'Michelin', 'Castrol', 'Shell', 'Mann', 'Brembo', 'Monroe'][Math.floor(Math.random() * 7)]
-    })
-  }
-  return products
-}
+import { productsService, type Product } from '../services/products'
 
 const BRANDS = ['Pirelli', 'Michelin', 'Bridgestone', 'Castrol', 'Shell', 'Mann', 'Brembo', 'Monroe']
 const CATEGORIES = [
@@ -57,9 +24,11 @@ export default function Component() {
   const toggleWish = useWishlist((s) => s.toggle)
   const hasWish = useWishlist((s) => s.has)
   
-  const [products, setProducts] = useState(BASE_PRODUCTS)
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalElements, setTotalElements] = useState(0)
   
   const searchParams = new URLSearchParams(location.search)
   const q = searchParams.get('q') ?? ''
@@ -72,16 +41,60 @@ export default function Component() {
   const max = searchParams.get('max') ?? ''
   const sort = searchParams.get('sort') ?? 'relevance'
 
-  const loadMoreProducts = useCallback(async () => {
+  const loadProducts = useCallback(async (pageNum: number, reset = false) => {
     if (loading) return
     setLoading(true)
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    const newProducts = generateMoreProducts(page)
-    setProducts(prev => [...prev, ...newProducts])
-    setPage(prev => prev + 1)
-    setLoading(false)
-  }, [loading, page])
+    
+    try {
+      let response
+      
+      if (q) {
+        response = await productsService.search(q, pageNum, 20)
+      } else if (categoria) {
+        response = await productsService.getByCategory(categoria, pageNum, 20)
+      } else if (marca) {
+        response = await productsService.getByBrand(marca, pageNum, 20)
+      } else if (min || max) {
+        const minPrice = min ? parseFloat(min) : 0
+        const maxPrice = max ? parseFloat(max) : 999999
+        response = await productsService.getByPriceRange(minPrice, maxPrice, pageNum, 20)
+      } else {
+        response = await productsService.getAll({ 
+          page: pageNum, 
+          size: 20,
+          sortBy: sort === 'price-asc' ? 'price' : sort === 'price-desc' ? 'price' : 'name',
+          sortDir: sort === 'price-desc' ? 'desc' : 'asc'
+        })
+      }
+      
+      if (reset) {
+        setProducts(response.content)
+      } else {
+        setProducts(prev => [...prev, ...response.content])
+      }
+      
+      setHasMore(!response.last)
+      setTotalElements(response.totalElements)
+    } catch (error) {
+      console.error('Erro ao carregar produtos:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [loading, q, categoria, marca, min, max, sort])
+
+  useEffect(() => {
+    setPage(0)
+    setProducts([])
+    loadProducts(0, true)
+  }, [q, categoria, marca, min, max, sort])
+
+  const loadMoreProducts = useCallback(() => {
+    if (!loading && hasMore) {
+      const nextPage = page + 1
+      setPage(nextPage)
+      loadProducts(nextPage, false)
+    }
+  }, [loading, hasMore, page, loadProducts])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -120,25 +133,11 @@ export default function Component() {
     }
   }
 
-  // Filter products based on search parameters
-  const filteredProducts = products.filter(product => {
-    if (categoria && product.category !== categoria) return false
-    if (marca && product.brand !== marca) return false
-    if (min && product.price < parseFloat(min)) return false
-    if (max && product.price > parseFloat(max)) return false
-    if (q && !product.name.toLowerCase().includes(q.toLowerCase())) return false
-    return true
-  })
-
-  // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sort) {
-      case 'price-asc': return a.price - b.price
-      case 'price-desc': return b.price - a.price
-      case 'rating': return b.rating - a.rating
-      default: return 0
-    }
-  })
+  const getProductImage = (product: Product) => {
+    return product.images && product.images.length > 0 
+      ? product.images[0] 
+      : `https://picsum.photos/seed/${product.id}/200/200`
+  }
 
   return (
     <div className="fade-in">
@@ -146,9 +145,9 @@ export default function Component() {
         <h1 className="text-2xl font-bold mb-2">
           {categoria ? `Produtos de ${CATEGORIES.find(c => c.slug === categoria)?.name}` : 'Buscar Produtos'}
         </h1>
-        <p className="text-zinc-600">
-          {filteredProducts.length} produto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
-        </p>
+          <p className="text-zinc-600">
+            {totalElements} produto{totalElements !== 1 ? 's' : ''} encontrado{totalElements !== 1 ? 's' : ''}
+          </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
@@ -262,10 +261,10 @@ export default function Component() {
 
         {/* Results */}
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold">
-              Resultados ({filteredProducts.length})
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold">
+                Resultados ({totalElements})
+              </h2>
             <select 
               className="rounded border border-zinc-300 px-3 py-2 text-sm focus:ring-2 focus:border-orange-500" 
               value={sort} 
@@ -278,7 +277,7 @@ export default function Component() {
             </select>
           </div>
 
-          {sortedProducts.length === 0 ? (
+            {products.length === 0 && !loading ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-lg font-semibold mb-2">Nenhum produto encontrado</h3>
@@ -290,55 +289,53 @@ export default function Component() {
                 Ver todos os produtos
               </button>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {sortedProducts.map((product, index) => (
-                <div key={product.id} className="card p-4 group hover:shadow-lg transition-all duration-300 slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-                  <Link to={`/produto/${product.id}`} className="block">
-                    <LazyImage 
-                      src={product.image} 
-                      alt={product.name} 
-                      className="h-48 w-full rounded mb-3" 
-                      placeholder="Carregando..."
-                    />
-                  </Link>
-                  
-                  <div className="mb-2">
-                    <div className="text-xs text-zinc-500 mb-1">{product.brand}</div>
-                    <Link to={`/produto/${product.id}`} className="text-sm font-medium line-clamp-2 hover:text-orange-500 transition-colors">
-                      {product.name}
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {products.map((product, index) => (
+                  <div key={product.id} className="card p-4 group hover:shadow-lg transition-all duration-300 slide-up" style={{ animationDelay: `${index * 50}ms` }}>
+                    <Link to={`/produto/${product.id}`} className="block">
+                      <LazyImage 
+                        src={getProductImage(product)} 
+                        alt={product.name} 
+                        className="h-48 w-full rounded mb-3" 
+                        placeholder="Carregando..."
+                      />
                     </Link>
-                  </div>
-
-                  <div className="flex items-center gap-1 mb-2">
-                    <div className="flex text-yellow-400">
-                      {'★'.repeat(Math.floor(product.rating))}
-                      {'☆'.repeat(5 - Math.floor(product.rating))}
+                    
+                    <div className="mb-2">
+                      <div className="text-xs text-zinc-500 mb-1">{product.brand}</div>
+                      <Link to={`/produto/${product.id}`} className="text-sm font-medium line-clamp-2 hover:text-orange-500 transition-colors">
+                        {product.name}
+                      </Link>
                     </div>
-                    <span className="text-xs text-zinc-500">({product.reviews})</span>
-                  </div>
 
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-lg font-bold">R$ {product.price.toFixed(2)}</div>
-                    <button 
-                      aria-label="wishlist" 
-                      onClick={() => toggleWish(product.id)} 
-                      className="text-zinc-400 hover:text-orange-500 transition-colors"
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-lg font-bold">R$ {product.price.toFixed(2)}</div>
+                      <button 
+                        aria-label="wishlist" 
+                        onClick={() => toggleWish(product.id)} 
+                        className="text-zinc-400 hover:text-orange-500 transition-colors"
+                      >
+                        {hasWish(product.id) ? '♥' : '♡'}
+                      </button>
+                    </div>
+
+                    <button
+                      className="w-full btn-primary text-sm"
+                      onClick={() => addItem({ 
+                        id: product.id, 
+                        name: product.name, 
+                        price: product.price, 
+                        image: getProductImage(product) 
+                      })}
+                      disabled={product.stock === 0}
                     >
-                      {hasWish(product.id) ? '♥' : '♡'}
+                      {product.stock === 0 ? 'Sem estoque' : 'Adicionar ao carrinho'}
                     </button>
                   </div>
-
-                  <button
-                    className="w-full btn-primary text-sm"
-                    onClick={() => addItem({ id: product.id, name: product.name, price: product.price, image: product.image })}
-                  >
-                    Adicionar ao carrinho
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
         </div>
       </div>
     </div>

@@ -34,7 +34,8 @@ export default function Component() {
       
       await login(email, password)
     } catch (err) {
-      setError('Erro ao fazer login. Tente novamente.')
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login. Tente novamente.'
+      setError(errorMessage)
     }
   }
 

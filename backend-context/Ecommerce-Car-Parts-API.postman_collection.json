@@ -1,0 +1,669 @@
+{
+	"info": {
+		"_postman_id": "ecommerce-car-parts-api",
+		"name": "E-commerce Car Parts API",
+		"description": "Collection completa para testar todos os endpoints da API de E-commerce de Peças Automotivas",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Autenticação",
+			"item": [
+				{
+					"name": "Registrar Usuário",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"usuario@example.com\",\n  \"password\": \"senha123\",\n  \"firstName\": \"João\",\n  \"lastName\": \"Silva\",\n  \"phone\": \"11999999999\",\n  \"address\": \"Rua das Flores, 123\",\n  \"role\": \"USER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Registra um novo usuário no sistema"
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"usuario@example.com\",\n  \"password\": \"senha123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Realiza login e retorna informações do usuário"
+					}
+				}
+			],
+			"description": "Endpoints de autenticação e registro de usuários"
+		},
+		{
+			"name": "Produtos",
+			"item": [
+				{
+					"name": "Criar Produto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Filtro de Óleo\",\n  \"description\": \"Filtro de óleo para motor 1.0\",\n  \"price\": 25.90,\n  \"stock\": 100,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\"https://example.com/filtro.jpg\"],\n  \"specifications\": \"Compatível com motores 1.0\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products"
+							]
+						},
+						"description": "Cria um novo produto vinculado automaticamente ao fornecedor do usuário logado. Não é necessário informar supplierId."
+					}
+				},
+				{
+					"name": "Listar Todos os Produtos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products?page=0&size=10&sortBy=name&sortDir=asc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Número da página (começa em 0)"
+								},
+								{
+									"key": "size",
+									"value": "10",
+									"description": "Quantidade de itens por página"
+								},
+								{
+									"key": "sortBy",
+									"value": "name",
+									"description": "Campo para ordenação (name, price, etc)"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc",
+									"description": "Direção da ordenação (asc ou desc)"
+								}
+							]
+						},
+						"description": "Lista todos os produtos com paginação"
+					}
+				},
+				{
+					"name": "Buscar Produto por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/{{product_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"{{product_id}}"
+							]
+						},
+						"description": "Busca um produto específico pelo ID"
+					}
+				},
+				{
+					"name": "Atualizar Produto",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Filtro de Óleo Atualizado\",\n  \"description\": \"Filtro de óleo para motor 1.0 - Atualizado\",\n  \"price\": 29.90,\n  \"stock\": 150,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\"https://example.com/filtro.jpg\"],\n  \"specifications\": \"Compatível com motores 1.0\",\n  \"supplierId\": \"{{supplier_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products/{{product_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"{{product_id}}"
+							]
+						},
+						"description": "Atualiza um produto existente. Apenas o dono do produto (através do fornecedor) pode atualizar."
+					}
+				},
+				{
+					"name": "Excluir Produto",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/{{product_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"{{product_id}}"
+							]
+						},
+						"description": "Exclui um produto (soft delete - marca como inativo). Apenas o dono do produto pode excluir."
+					}
+				},
+				{
+					"name": "Buscar Produtos por Categoria",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/category/Filtros?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"category",
+								"Filtros"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Busca produtos por categoria"
+					}
+				},
+				{
+					"name": "Buscar Produtos por Marca",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/brand/Mann?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"brand",
+								"Mann"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Busca produtos por marca"
+					}
+				},
+				{
+					"name": "Buscar Produtos por Nome",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/search?name=filtro&page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "filtro",
+									"description": "Nome do produto para buscar"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Busca produtos por nome (case-insensitive)"
+					}
+				},
+				{
+					"name": "Filtrar Produtos por Faixa de Preço",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/price-range?minPrice=10&maxPrice=100&page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"price-range"
+							],
+							"query": [
+								{
+									"key": "minPrice",
+									"value": "10",
+									"description": "Preço mínimo"
+								},
+								{
+									"key": "maxPrice",
+									"value": "100",
+									"description": "Preço máximo"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Filtra produtos por faixa de preço"
+					}
+				},
+				{
+					"name": "Buscar Produtos por Fornecedor",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/supplier/{{supplier_id}}?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"supplier",
+								"{{supplier_id}}"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Busca produtos de um fornecedor específico"
+					}
+				}
+			],
+			"description": "Endpoints para gerenciamento de produtos. Produtos são automaticamente vinculados ao fornecedor do usuário logado."
+		},
+		{
+			"name": "Fornecedores",
+			"item": [
+				{
+					"name": "Criar Fornecedor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Auto Parts Distribuidora\",\n  \"description\": \"Distribuidora de peças automotivas\",\n  \"email\": \"contato@autoparts.com\",\n  \"phone\": \"11987654321\",\n  \"address\": \"Av. Principal, 1000\",\n  \"city\": \"São Paulo\",\n  \"state\": \"SP\",\n  \"zipCode\": \"01234-567\",\n  \"country\": \"Brasil\",\n  \"contactPerson\": \"João Silva\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/suppliers",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"suppliers"
+							]
+						},
+						"description": "Cria um novo fornecedor vinculado automaticamente ao usuário logado. Cada usuário pode ter apenas um fornecedor."
+					}
+				},
+				{
+					"name": "Buscar Meu Fornecedor",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/suppliers/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"suppliers",
+								"me"
+							]
+						},
+						"description": "Busca o fornecedor vinculado ao usuário logado"
+					}
+				},
+				{
+					"name": "Listar Todos os Fornecedores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/suppliers",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"suppliers"
+							]
+						},
+						"description": "Lista todos os fornecedores"
+					}
+				},
+				{
+					"name": "Buscar Fornecedor por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/suppliers/{{supplier_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"suppliers",
+								"{{supplier_id}}"
+							]
+						},
+						"description": "Busca um fornecedor específico pelo ID"
+					}
+				},
+				{
+					"name": "Atualizar Fornecedor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Auto Parts Distribuidora Atualizada\",\n  \"description\": \"Distribuidora de peças automotivas - Atualizada\",\n  \"email\": \"contato@autoparts.com\",\n  \"phone\": \"11987654321\",\n  \"address\": \"Av. Principal, 1000\",\n  \"city\": \"São Paulo\",\n  \"state\": \"SP\",\n  \"zipCode\": \"01234-567\",\n  \"country\": \"Brasil\",\n  \"contactPerson\": \"João Silva\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/suppliers/{{supplier_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"suppliers",
+								"{{supplier_id}}"
+							]
+						},
+						"description": "Atualiza um fornecedor existente. Apenas o dono do fornecedor pode atualizar."
+					}
+				},
+				{
+					"name": "Excluir Fornecedor",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/suppliers/{{supplier_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"suppliers",
+								"{{supplier_id}}"
+							]
+						},
+						"description": "Exclui um fornecedor (soft delete). Apenas o dono do fornecedor pode excluir."
+					}
+				}
+			],
+			"description": "Endpoints para gerenciamento de fornecedores. Cada usuário pode ter apenas um fornecedor, vinculado automaticamente ao criar."
+		},
+		{
+			"name": "Carrinho",
+			"item": [
+				{
+					"name": "Obter Carrinho do Usuário",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{user_id}}"
+							]
+						},
+						"description": "Retorna o carrinho de compras de um usuário"
+					}
+				},
+				{
+					"name": "Adicionar Item ao Carrinho",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart/{{user_id}}/add?productId={{product_id}}&quantity=2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{user_id}}",
+								"add"
+							],
+							"query": [
+								{
+									"key": "productId",
+									"value": "{{product_id}}",
+									"description": "ID do produto"
+								},
+								{
+									"key": "quantity",
+									"value": "2",
+									"description": "Quantidade do produto"
+								}
+							]
+						},
+						"description": "Adiciona um produto ao carrinho do usuário"
+					}
+				},
+				{
+					"name": "Atualizar Quantidade do Item",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart/{{user_id}}/update?productId={{product_id}}&quantity=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{user_id}}",
+								"update"
+							],
+							"query": [
+								{
+									"key": "productId",
+									"value": "{{product_id}}",
+									"description": "ID do produto"
+								},
+								{
+									"key": "quantity",
+									"value": "5",
+									"description": "Nova quantidade"
+								}
+							]
+						},
+						"description": "Atualiza a quantidade de um item no carrinho"
+					}
+				},
+				{
+					"name": "Remover Item do Carrinho",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart/{{user_id}}/remove?productId={{product_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{user_id}}",
+								"remove"
+							],
+							"query": [
+								{
+									"key": "productId",
+									"value": "{{product_id}}",
+									"description": "ID do produto a ser removido"
+								}
+							]
+						},
+						"description": "Remove um produto do carrinho"
+					}
+				},
+				{
+					"name": "Limpar Carrinho",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart/{{user_id}}/clear",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{user_id}}",
+								"clear"
+							]
+						},
+						"description": "Remove todos os itens do carrinho"
+					}
+				}
+			],
+			"description": "Endpoints para gerenciamento do carrinho de compras"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "product_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "supplier_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+

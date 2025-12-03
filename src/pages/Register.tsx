@@ -14,13 +14,16 @@ export default function Component() {
     
     try {
       const data = new FormData(e.currentTarget)
-      const name = String(data.get('name') || '')
+      const firstName = String(data.get('firstName') || '')
+      const lastName = String(data.get('lastName') || '')
       const email = String(data.get('email') || '')
       const password = String(data.get('password') || '')
       const confirmPassword = String(data.get('confirmPassword') || '')
+      const phone = String(data.get('phone') || '')
+      const address = String(data.get('address') || '')
       
-      if (!name || !email || !password || !confirmPassword) {
-        setError('Por favor, preencha todos os campos')
+      if (!firstName || !lastName || !email || !password || !confirmPassword) {
+        setError('Por favor, preencha todos os campos obrigatórios')
         return
       }
       
@@ -34,10 +37,11 @@ export default function Component() {
         return
       }
       
-      await register(name, email, password)
+      await register(firstName, lastName, email, password, phone || undefined, address || undefined)
       navigate('/')
     } catch (err) {
-      setError('Erro ao criar conta. Tente novamente.')
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta. Tente novamente.'
+      setError(errorMessage)
     }
   }
 
@@ -57,22 +61,36 @@ export default function Component() {
               </div>
             )}
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-zinc-700 mb-1">
-                Nome completo
-              </label>
-              <input 
-                id="name"
-                name="name" 
-                required 
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none" 
-                placeholder="Seu nome completo" 
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-zinc-700 mb-1">
+                  Nome *
+                </label>
+                <input 
+                  id="firstName"
+                  name="firstName" 
+                  required 
+                  className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none" 
+                  placeholder="Seu nome" 
+                />
+              </div>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-zinc-700 mb-1">
+                  Sobrenome *
+                </label>
+                <input 
+                  id="lastName"
+                  name="lastName" 
+                  required 
+                  className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none" 
+                  placeholder="Seu sobrenome" 
+                />
+              </div>
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-1">
-                Email
+                Email *
               </label>
               <input 
                 id="email"
@@ -85,8 +103,34 @@ export default function Component() {
             </div>
 
             <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-zinc-700 mb-1">
+                Telefone
+              </label>
+              <input 
+                id="phone"
+                name="phone" 
+                type="tel" 
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none" 
+                placeholder="(11) 99999-9999" 
+              />
+            </div>
+
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium text-zinc-700 mb-1">
+                Endereço
+              </label>
+              <input 
+                id="address"
+                name="address" 
+                type="text" 
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none" 
+                placeholder="Rua, número, complemento" 
+              />
+            </div>
+
+            <div>
               <label htmlFor="password" className="block text-sm font-medium text-zinc-700 mb-1">
-                Senha
+                Senha *
               </label>
               <input 
                 id="password"
@@ -101,7 +145,7 @@ export default function Component() {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-700 mb-1">
-                Confirmar senha
+                Confirmar senha *
               </label>
               <input 
                 id="confirmPassword"

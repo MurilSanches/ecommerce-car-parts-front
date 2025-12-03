@@ -1,42 +1,100 @@
 import { create } from 'zustand'
+import { authService, type UserResponse } from '../services/auth'
+import { suppliersService } from '../services/suppliers'
 
 export type AuthUser = {
   id: string
   name: string
   email: string
+  firstName?: string
+  lastName?: string
+  phone?: string
+  address?: string
 }
 
 type AuthState = {
   user: AuthUser | null
-  status: 'idle' | 'loading'
+  hasSupplier: boolean
+  status: 'idle' | 'loading' | 'error'
+  error: string | null
   login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
+  register: (firstName: string, lastName: string, email: string, password: string, phone?: string, address?: string) => Promise<void>
   logout: () => void
   hydrate: () => void
+  checkSupplier: () => Promise<void>
 }
 
 const STORAGE_KEY = 'auth:user'
 
-export const useAuthStore = create<AuthState>((set) => ({
+function mapUserResponseToAuthUser(user: UserResponse): AuthUser {
+  return {
+    id: user.id,
+    name: `${user.firstName} ${user.lastName}`.trim() || user.email.split('@')[0],
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    phone: user.phone,
+    address: user.address,
+  }
+}
+
+async function checkUserSupplier(): Promise<boolean> {
+  try {
+    await suppliersService.getMySupplier()
+    return true
+  } catch {
+    return false
+  }
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
+  hasSupplier: false,
   status: 'idle',
-  async login(email, _password) {
-    set({ status: 'loading' })
-    await new Promise((r) => setTimeout(r, 400))
-    const user = { id: 'u1', name: email.split('@')[0] || 'Usuário', email }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-    set({ user, status: 'idle' })
+  error: null,
+  async login(email, password) {
+    set({ status: 'loading', error: null })
+    try {
+      const userResponse = await authService.login({ email, password })
+      const user = mapUserResponseToAuthUser(userResponse)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+      
+      // Verificar se o usuário tem fornecedor
+      const hasSupplier = await checkUserSupplier()
+      
+      set({ user, hasSupplier, status: 'idle', error: null })
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login'
+      set({ status: 'error', error: errorMessage, user: null, hasSupplier: false })
+      throw error
+    }
   },
-  async register(name, email, _password) {
-    set({ status: 'loading' })
-    await new Promise((r) => setTimeout(r, 500))
-    const user = { id: 'u2', name, email }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-    set({ user, status: 'idle' })
+  async register(firstName, lastName, email, password, phone, address) {
+    set({ status: 'loading', error: null })
+    try {
+      const userResponse = await authService.register({
+        firstName,
+        lastName,
+        email,
+        password,
+        phone,
+        address,
+        role: 'USER',
+      })
+      const user = mapUserResponseToAuthUser(userResponse)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+      
+      // Novo usuário não tem fornecedor ainda
+      set({ user, hasSupplier: false, status: 'idle', error: null })
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar conta'
+      set({ status: 'error', error: errorMessage, user: null, hasSupplier: false })
+      throw error
+    }
   },
   logout() {
     localStorage.removeItem(STORAGE_KEY)
-    set({ user: null })
+    set({ user: null, hasSupplier: false, error: null })
   },
   hydrate() {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -44,7 +102,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       try {
         const user = JSON.parse(raw) as AuthUser
         set({ user })
+        // Verificar fornecedor após hydrate
+        get().checkSupplier()
       } catch {}
+    }
+  },
+  async checkSupplier() {
+    const { user } = get()
+    if (user) {
+      const hasSupplier = await checkUserSupplier()
+      set({ hasSupplier })
+    } else {
+      set({ hasSupplier: false })
     }
   },
 }))
