@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { suppliersService, type Supplier } from '../../services/suppliers'
 import { productsService } from '../../services/products'
 import { useAuthStore } from '../../store/auth'
+import { User, Home, Package, Plus, Box, BarChart3, DollarSign } from 'lucide-react'
 
 export default function Component() {
   const navigate = useNavigate()
@@ -22,7 +23,6 @@ export default function Component() {
         const mySupplier = await suppliersService.getMySupplier()
         setSupplier(mySupplier)
 
-        // Load products stats
         const productsResponse = await productsService.getBySupplier(mySupplier.id, 0, 1000)
         const products = productsResponse.content
         const totalStock = products.reduce((sum, p) => sum + p.stock, 0)
@@ -34,8 +34,6 @@ export default function Component() {
           totalValue,
         })
       } catch (error) {
-        console.error('Erro ao carregar fornecedor:', error)
-        // Se não tiver fornecedor, redireciona para criar
         navigate('/fornecedor/cadastrar')
       } finally {
         setLoading(false)
@@ -81,7 +79,9 @@ export default function Component() {
               <p className="text-sm text-zinc-600 mb-1">Total de Produtos</p>
               <p className="text-3xl font-bold">{stats.totalProducts}</p>
             </div>
-            <div className="text-4xl">📦</div>
+            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+              <Box className="w-6 h-6 text-orange-600" />
+            </div>
           </div>
         </div>
 
@@ -91,7 +91,9 @@ export default function Component() {
               <p className="text-sm text-zinc-600 mb-1">Estoque Total</p>
               <p className="text-3xl font-bold">{stats.totalStock}</p>
             </div>
-            <div className="text-4xl">📊</div>
+            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+              <BarChart3 className="w-6 h-6 text-orange-600" />
+            </div>
           </div>
         </div>
 
@@ -101,7 +103,9 @@ export default function Component() {
               <p className="text-sm text-zinc-600 mb-1">Valor Total em Estoque</p>
               <p className="text-3xl font-bold">R$ {stats.totalValue.toFixed(2)}</p>
             </div>
-            <div className="text-4xl">💰</div>
+            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-orange-600" />
+            </div>
           </div>
         </div>
       </div>
@@ -109,25 +113,33 @@ export default function Component() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Link to="/fornecedor/produtos" className="card p-6 hover:shadow-lg transition-all text-center">
-          <div className="text-4xl mb-3">📋</div>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
+            <Package className="w-6 h-6 text-orange-600" />
+          </div>
           <h3 className="font-semibold mb-1">Meus Produtos</h3>
           <p className="text-sm text-zinc-600">Ver e gerenciar produtos</p>
         </Link>
 
         <Link to="/fornecedor/produtos/novo" className="card p-6 hover:shadow-lg transition-all text-center">
-          <div className="text-4xl mb-3">➕</div>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
+            <Plus className="w-6 h-6 text-orange-600" />
+          </div>
           <h3 className="font-semibold mb-1">Adicionar Produto</h3>
           <p className="text-sm text-zinc-600">Cadastrar novo produto</p>
         </Link>
 
         <Link to="/fornecedor/perfil" className="card p-6 hover:shadow-lg transition-all text-center">
-          <div className="text-4xl mb-3">⚙️</div>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
+            <User className="w-6 h-6 text-orange-600" />
+          </div>
           <h3 className="font-semibold mb-1">Meu Perfil</h3>
           <p className="text-sm text-zinc-600">Editar informações</p>
         </Link>
 
         <Link to="/" className="card p-6 hover:shadow-lg transition-all text-center">
-          <div className="text-4xl mb-3">🏠</div>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
+            <Home className="w-6 h-6 text-orange-600" />
+          </div>
           <h3 className="font-semibold mb-1">Voltar à Loja</h3>
           <p className="text-sm text-zinc-600">Ver como cliente</p>
         </Link>

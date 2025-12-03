@@ -16,13 +16,14 @@ export type LoginRequest = {
 }
 
 export type UserResponse = {
-  id: string
+  userId: string
   email: string
   firstName: string
   lastName: string
   phone?: string
   address?: string
   role?: string
+  message?: string
 }
 
 export const authService = {

@@ -27,8 +27,12 @@ type AuthState = {
 const STORAGE_KEY = 'auth:user'
 
 function mapUserResponseToAuthUser(user: UserResponse): AuthUser {
+  if (!user.userId) {
+    throw new Error('Resposta do servidor não contém userId')
+  }
+  
   return {
-    id: user.id,
+    id: user.userId,
     name: `${user.firstName} ${user.lastName}`.trim() || user.email.split('@')[0],
     email: user.email,
     firstName: user.firstName,
@@ -59,9 +63,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = mapUserResponseToAuthUser(userResponse)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
       
-      // Verificar se o usuário tem fornecedor
       const hasSupplier = await checkUserSupplier()
-      
       set({ user, hasSupplier, status: 'idle', error: null })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login'
@@ -84,7 +86,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = mapUserResponseToAuthUser(userResponse)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
       
-      // Novo usuário não tem fornecedor ainda
       set({ user, hasSupplier: false, status: 'idle', error: null })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao criar conta'
@@ -102,7 +103,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       try {
         const user = JSON.parse(raw) as AuthUser
         set({ user })
-        // Verificar fornecedor após hydrate
         get().checkSupplier()
       } catch {}
     }

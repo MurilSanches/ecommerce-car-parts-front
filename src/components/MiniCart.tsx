@@ -1,13 +1,53 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import { useCartStore, selectCartCount, selectCartTotal } from '../store/cart'
-import { ShoppingBag } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useAuthStore } from '../store/auth'
+import { cartService } from '../services/cart'
+import { ShoppingBag, Loader2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 export function MiniCartButton() {
+  const navigate = useNavigate()
+  const user = useAuthStore((s) => s.user)
   const count = useCartStore((s) => selectCartCount(s))
   const total = useCartStore((s) => selectCartTotal(s))
   const itemsObj = useCartStore((s) => s.items)
   const items = Object.values(itemsObj)
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  const handleGoToCheckout = async () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+
+    if (items.length === 0) {
+      navigate('/checkout')
+      return
+    }
+
+    setIsSyncing(true)
+
+    try {
+      try {
+        await cartService.createCart(user.id)
+      } catch (err: any) {
+        if (err?.response?.status !== 400) {
+          throw err
+        }
+      }
+
+      for (const item of items) {
+        await cartService.addItem(user.id, item.id, item.quantity)
+      }
+
+      navigate('/checkout')
+    } catch (error) {
+      navigate('/checkout')
+    } finally {
+      setIsSyncing(false)
+    }
+  }
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
@@ -53,7 +93,20 @@ export function MiniCartButton() {
               <span>Total</span>
               <span className="font-semibold">R$ {total.toFixed(2)}</span>
             </div>
-            <Link to="/checkout" className="mt-3 block w-full btn-primary text-center">Ir para checkout</Link>
+            <button
+              onClick={handleGoToCheckout}
+              disabled={isSyncing || items.length === 0}
+              className="mt-3 w-full btn-primary text-center disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSyncing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sincronizando...
+                </>
+              ) : (
+                'Ir para checkout'
+              )}
+            </button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

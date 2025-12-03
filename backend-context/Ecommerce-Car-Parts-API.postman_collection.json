@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "ecommerce-car-parts-api",
 		"name": "E-commerce Car Parts API",
-		"description": "Collection completa para testar todos os endpoints da API de E-commerce de Peças Automotivas",
+		"description": "Collection completa para testar todos os endpoints da API de E-commerce de Peças Automotivas.\n\n**Fluxo de Uso:**\n1. Registrar/Login (Autenticação) - Obtenha o userId da resposta\n2. Criar Fornecedor (vinculado ao usuário) - Use header X-User-Id\n3. Criar Produtos (vinculados automaticamente ao fornecedor) - Use header X-User-Id\n4. Consultar informações de carro por placa (não requer autenticação)\n5. Filtrar produtos por marcas recomendadas\n6. Gerenciar Carrinho\n\n**Importante:** Endpoints que criam/atualizam/excluem recursos requerem o header **X-User-Id** com o ID do usuário. Após fazer login ou registrar, use o userId retornado na resposta.\n\n**Novas Funcionalidades:**\n- Consulta de informações de carro por placa (gera dados aleatórios mas consistentes)\n- Campo 'recommendedBrands' (array) nos produtos para associar a múltiplas marcas de carros\n- Filtros por marcas recomendadas nos produtos (suporta múltiplas marcas)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -79,11 +79,16 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "{{user_id}}",
+								"description": "ID do usuário autenticado"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Filtro de Óleo\",\n  \"description\": \"Filtro de óleo para motor 1.0\",\n  \"price\": 25.90,\n  \"stock\": 100,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\"https://example.com/filtro.jpg\"],\n  \"specifications\": \"Compatível com motores 1.0\"\n}"
+							"raw": "{\n  \"name\": \"Filtro de Óleo\",\n  \"description\": \"Filtro de óleo para motor 1.0\",\n  \"price\": 25.90,\n  \"stock\": 100,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\"https://example.com/filtro.jpg\"],\n  \"specifications\": \"Compatível com motores 1.0\",\n  \"recommendedBrands\": [\"VOLKSWAGEN\", \"FIAT\", \"FORD\"]\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/products",
@@ -95,7 +100,7 @@
 								"products"
 							]
 						},
-						"description": "Cria um novo produto vinculado automaticamente ao fornecedor do usuário logado. Não é necessário informar supplierId."
+						"description": "Cria um novo produto vinculado automaticamente ao fornecedor do usuário logado. Não é necessário informar supplierId. Requer header X-User-Id e que o usuário tenha um fornecedor criado.\n\nO campo 'recommendedBrands' é opcional e aceita um array de valores do enum CarBrand (ex: [\"VOLKSWAGEN\", \"FIAT\", \"FORD\"]). Este campo permite associar o produto a múltiplas marcas de carro para facilitar a busca e filtragem."
 					}
 				},
 				{
@@ -132,6 +137,11 @@
 									"key": "sortDir",
 									"value": "asc",
 									"description": "Direção da ordenação (asc ou desc)"
+								},
+								{
+									"key": "recommendedBrands",
+									"value": "VOLKSWAGEN",
+									"description": "Filtro opcional por marcas recomendadas (pode repetir o parâmetro para múltiplas marcas: recommendedBrands=VOLKSWAGEN&recommendedBrands=FIAT)"
 								}
 							]
 						},
@@ -165,11 +175,16 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "{{user_id}}",
+								"description": "ID do usuário autenticado"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Filtro de Óleo Atualizado\",\n  \"description\": \"Filtro de óleo para motor 1.0 - Atualizado\",\n  \"price\": 29.90,\n  \"stock\": 150,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\"https://example.com/filtro.jpg\"],\n  \"specifications\": \"Compatível com motores 1.0\",\n  \"supplierId\": \"{{supplier_id}}\"\n}"
+							"raw": "{\n  \"name\": \"Filtro de Óleo Atualizado\",\n  \"description\": \"Filtro de óleo para motor 1.0 - Atualizado\",\n  \"price\": 29.90,\n  \"stock\": 150,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\"https://example.com/filtro.jpg\"],\n  \"specifications\": \"Compatível com motores 1.0\",\n  \"recommendedBrands\": [\"VOLKSWAGEN\", \"FIAT\", \"FORD\"]\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/products/{{product_id}}",
@@ -182,14 +197,20 @@
 								"{{product_id}}"
 							]
 						},
-						"description": "Atualiza um produto existente. Apenas o dono do produto (através do fornecedor) pode atualizar."
+						"description": "Atualiza um produto existente. Apenas o dono do produto (através do fornecedor) pode atualizar. Requer header X-User-Id."
 					}
 				},
 				{
 					"name": "Excluir Produto",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{user_id}}",
+								"description": "ID do usuário autenticado"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/products/{{product_id}}",
 							"host": [
@@ -201,7 +222,7 @@
 								"{{product_id}}"
 							]
 						},
-						"description": "Exclui um produto (soft delete - marca como inativo). Apenas o dono do produto pode excluir."
+						"description": "Exclui um produto (soft delete - marca como inativo). Apenas o dono do produto pode excluir. Requer header X-User-Id."
 					}
 				},
 				{
@@ -366,9 +387,109 @@
 						},
 						"description": "Busca produtos de um fornecedor específico"
 					}
+				},
+				{
+					"name": "Buscar Produtos por Marca Recomendada",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/recommended-brand/VOLKSWAGEN?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"recommended-brand",
+								"VOLKSWAGEN"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Busca produtos filtrados por uma marca recomendada. Valores válidos: VOLKSWAGEN, FIAT, FORD, CHEVROLET, RENAULT, TOYOTA, HONDA, HYUNDAI, NISSAN, PEUGEOT, CITROEN, MERCEDES_BENZ, BMW, AUDI, VOLVO, JEEP, MITSUBISHI, KIA, SUZUKI, MAZDA, SUBARU, LAND_ROVER, JAGUAR, PORSCHE, FERRARI, LAMBORGHINI, MASERATI, ALFA_ROMEO, MINI, SMART, RAM, DODGE, CHRYSLER, CADILLAC, LINCOLN, INFINITI, ACURA, LEXUS, TESLA, BYD, CHERY, JAC, LIFAN, TAC, GREAT_WALL, CAOA_CHERY, IVECO, SCANIA, MAN, MERCEDES_BENZ_TRUCKS"
+					}
+				},
+				{
+					"name": "Buscar Produtos por Múltiplas Marcas Recomendadas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/recommended-brands?recommendedBrands=VOLKSWAGEN&recommendedBrands=FIAT&recommendedBrands=FORD&page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"recommended-brands"
+							],
+							"query": [
+								{
+									"key": "recommendedBrands",
+									"value": "VOLKSWAGEN",
+									"description": "Marca recomendada (repita o parâmetro para múltiplas marcas)"
+								},
+								{
+									"key": "recommendedBrands",
+									"value": "FIAT",
+									"description": "Marca recomendada (repita o parâmetro para múltiplas marcas)"
+								},
+								{
+									"key": "recommendedBrands",
+									"value": "FORD",
+									"description": "Marca recomendada (repita o parâmetro para múltiplas marcas)"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Busca produtos que tenham pelo menos uma das marcas recomendadas especificadas. Retorna produtos que contenham qualquer uma das marcas no array recommendedBrands."
+					}
 				}
 			],
 			"description": "Endpoints para gerenciamento de produtos. Produtos são automaticamente vinculados ao fornecedor do usuário logado."
+		},
+		{
+			"name": "Carros",
+			"item": [
+				{
+					"name": "Consultar Carro por Placa",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cars/plate/ABC1234",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cars",
+								"plate",
+								"ABC1234"
+							]
+						},
+						"description": "Consulta informações de um carro pela placa. Aceita placas no formato antigo (ABC1234) ou novo (ABC1D23). Retorna informações aleatórias mas consistentes (mesma placa sempre retorna os mesmos dados). Não requer autenticação."
+					}
+				}
+			],
+			"description": "Endpoints para consulta de informações de carros"
 		},
 		{
 			"name": "Fornecedores",
@@ -381,6 +502,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "{{user_id}}",
+								"description": "ID do usuário autenticado"
 							}
 						],
 						"body": {
@@ -397,14 +523,20 @@
 								"suppliers"
 							]
 						},
-						"description": "Cria um novo fornecedor vinculado automaticamente ao usuário logado. Cada usuário pode ter apenas um fornecedor."
+						"description": "Cria um novo fornecedor vinculado automaticamente ao usuário logado. Cada usuário pode ter apenas um fornecedor. Requer header X-User-Id."
 					}
 				},
 				{
 					"name": "Buscar Meu Fornecedor",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{user_id}}",
+								"description": "ID do usuário autenticado"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/suppliers/me",
 							"host": [
@@ -416,7 +548,7 @@
 								"me"
 							]
 						},
-						"description": "Busca o fornecedor vinculado ao usuário logado"
+						"description": "Busca o fornecedor vinculado ao usuário logado. Requer header X-User-Id."
 					}
 				},
 				{
@@ -464,6 +596,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "{{user_id}}",
+								"description": "ID do usuário autenticado"
 							}
 						],
 						"body": {
@@ -481,14 +618,20 @@
 								"{{supplier_id}}"
 							]
 						},
-						"description": "Atualiza um fornecedor existente. Apenas o dono do fornecedor pode atualizar."
+						"description": "Atualiza um fornecedor existente. Apenas o dono do fornecedor pode atualizar. Requer header X-User-Id."
 					}
 				},
 				{
 					"name": "Excluir Fornecedor",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{user_id}}",
+								"description": "ID do usuário autenticado"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/suppliers/{{supplier_id}}",
 							"host": [
@@ -500,7 +643,7 @@
 								"{{supplier_id}}"
 							]
 						},
-						"description": "Exclui um fornecedor (soft delete). Apenas o dono do fornecedor pode excluir."
+						"description": "Exclui um fornecedor (soft delete). Apenas o dono do fornecedor pode excluir. Requer header X-User-Id."
 					}
 				}
 			],
@@ -509,6 +652,25 @@
 		{
 			"name": "Carrinho",
 			"item": [
+				{
+					"name": "Criar Carrinho",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{user_id}}"
+							]
+						},
+						"description": "Cria um carrinho vazio para o usuário especificado. Se já existir um carrinho para o usuário, retorna erro. O carrinho também é criado automaticamente ao adicionar o primeiro item."
+					}
+				},
 				{
 					"name": "Obter Carrinho do Usuário",
 					"request": {
@@ -638,9 +800,29 @@
 						},
 						"description": "Remove todos os itens do carrinho"
 					}
+				},
+				{
+					"name": "Finalizar Compra (Checkout)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart/{{user_id}}/checkout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{user_id}}",
+								"checkout"
+							]
+						},
+						"description": "Finaliza a compra do carrinho. Valida o estoque novamente, reduz o estoque dos produtos, cria um pedido (Order) com status CONFIRMED e limpa o carrinho. Se algum produto não tiver estoque suficiente, a operação falha e nenhum estoque é reduzido."
+					}
 				}
 			],
-			"description": "Endpoints para gerenciamento do carrinho de compras"
+			"description": "Endpoints para gerenciamento do carrinho de compras. Todos os endpoints requerem o userId como parâmetro de path."
 		}
 	],
 	"variable": [

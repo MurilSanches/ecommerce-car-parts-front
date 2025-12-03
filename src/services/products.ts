@@ -14,6 +14,7 @@ export type Product = {
   specifications?: string
   supplierId?: string
   active?: boolean
+  recommendedBrands?: string[]
   createdAt?: string
   updatedAt?: string
 }
@@ -39,6 +40,7 @@ export type ProductFilters = {
   minPrice?: number
   maxPrice?: number
   supplierId?: string
+  recommendedBrands?: string[]
 }
 
 export const productsService = {
@@ -49,6 +51,18 @@ export const productsService = {
     if (filters?.size !== undefined) params.append('size', filters.size.toString())
     if (filters?.sortBy) params.append('sortBy', filters.sortBy)
     if (filters?.sortDir) params.append('sortDir', filters.sortDir)
+    if (filters?.category) params.append('category', filters.category)
+    if (filters?.brand) params.append('brand', filters.brand)
+    if (filters?.name) params.append('name', filters.name)
+    if (filters?.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString())
+    if (filters?.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString())
+    if (filters?.supplierId) params.append('supplierId', filters.supplierId)
+    
+    if (filters?.recommendedBrands && filters.recommendedBrands.length > 0) {
+      filters.recommendedBrands.forEach(brand => {
+        params.append('recommendedBrands', brand)
+      })
+    }
     
     const query = params.toString()
     return api.get<ProductPageResponse>(`/products${query ? `?${query}` : ''}`)
@@ -76,6 +90,20 @@ export const productsService = {
 
   async getBySupplier(supplierId: string, page = 0, size = 10): Promise<ProductPageResponse> {
     return api.get<ProductPageResponse>(`/products/supplier/${supplierId}?page=${page}&size=${size}`)
+  },
+
+  async getByRecommendedBrand(recommendedBrand: string, page = 0, size = 10): Promise<ProductPageResponse> {
+    return api.get<ProductPageResponse>(`/products/recommended-brand/${encodeURIComponent(recommendedBrand)}?page=${page}&size=${size}`)
+  },
+
+  async getByRecommendedBrands(recommendedBrands: string[], page = 0, size = 10): Promise<ProductPageResponse> {
+    const params = new URLSearchParams()
+    recommendedBrands.forEach(brand => {
+      params.append('recommendedBrands', brand)
+    })
+    params.append('page', page.toString())
+    params.append('size', size.toString())
+    return api.get<ProductPageResponse>(`/products/recommended-brands?${params.toString()}`)
   },
 
   async create(data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {

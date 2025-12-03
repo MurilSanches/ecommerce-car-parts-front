@@ -4,6 +4,7 @@ import { suppliersService, type Supplier } from '../../services/suppliers'
 import { productsService, type Product } from '../../services/products'
 import { useAuthStore } from '../../store/auth'
 import { LazyImage } from '../../components/LazyImage'
+import { Package } from 'lucide-react'
 
 export default function Component() {
   const navigate = useNavigate()
@@ -22,7 +23,6 @@ export default function Component() {
         setSupplier(mySupplier)
         await loadProducts(mySupplier.id, 0)
       } catch (error) {
-        console.error('Erro ao carregar dados:', error)
         navigate('/fornecedor/cadastrar')
       } finally {
         setLoading(false)
@@ -44,7 +44,6 @@ export default function Component() {
       }
       setHasMore(!response.last)
     } catch (error) {
-      console.error('Erro ao carregar produtos:', error)
     }
   }
 
@@ -56,7 +55,6 @@ export default function Component() {
       setProducts(prev => prev.filter(p => p.id !== productId))
     } catch (error) {
       alert('Erro ao excluir produto')
-      console.error(error)
     }
   }
 
@@ -88,7 +86,9 @@ export default function Component() {
 
       {products.length === 0 ? (
         <div className="text-center py-16">
-          <div className="text-6xl mb-4">📦</div>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center">
+            <Package className="w-8 h-8 text-orange-600" />
+          </div>
           <h3 className="text-xl font-semibold mb-2">Nenhum produto cadastrado</h3>
           <p className="text-zinc-600 mb-6">Comece adicionando seu primeiro produto</p>
           <Link to="/fornecedor/produtos/novo" className="btn-primary">

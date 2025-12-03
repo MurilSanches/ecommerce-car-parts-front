@@ -12,25 +12,32 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-white shadow-sm transition-all duration-200 hover:scale-105;
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-white shadow-sm transition-all duration-200 hover:scale-105 font-semibold;
     background-color: #ff6b00;
+    box-shadow: 0 2px 8px rgba(255, 107, 0, 0.3);
   }
   .btn-primary:hover {
     background-color: #db5900;
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.4);
   }
   .btn-primary:active {
     background-color: #b74800;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-md border px-4 py-2 transition-all duration-200 hover:scale-105;
+    @apply inline-flex items-center justify-center rounded-md border-2 px-4 py-2 transition-all duration-200 hover:scale-105 font-semibold;
     border-color: #ff6b00;
     color: #ff6b00;
   }
   .btn-outline:hover {
     background-color: #fff3e8;
+    border-color: #db5900;
   }
   .card {
-    @apply rounded-lg border bg-white shadow-sm hover:shadow-md transition-all duration-300;
+    @apply rounded-lg border bg-white shadow-sm hover:shadow-lg transition-all duration-300;
+    border-color: #e5e7eb;
+  }
+  .card:hover {
+    border-color: #ff6b00;
   }
   .fade-in {
     opacity: 0;

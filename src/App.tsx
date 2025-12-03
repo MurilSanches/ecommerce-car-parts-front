@@ -3,7 +3,8 @@ import { MiniCartButton } from './components/MiniCart'
 import { DepartmentsMenu } from './components/DepartmentsMenu'
 import { Footer } from './components/Footer'
 import { useAuthStore } from './store/auth'
-import { useState } from 'react'
+import { useWishlist } from './store/wishlist'
+import { useState, useEffect } from 'react'
 import { Menu, X, Search, Heart, LayoutDashboard, Package, UserPlus, LogOut, User } from 'lucide-react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 
@@ -13,7 +14,12 @@ function App() {
   const user = useAuthStore((s) => s.user)
   const hasSupplier = useAuthStore((s) => s.hasSupplier)
   const logout = useAuthStore((s) => s.logout)
+  const hydrateWishlist = useWishlist((s) => s.hydrate)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  useEffect(() => {
+    hydrateWishlist()
+  }, [hydrateWishlist])
 
   function onSearchSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -31,11 +37,11 @@ function App() {
 
   return (
     <div className="min-h-dvh bg-white text-zinc-900">
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b shadow-sm">
+      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b-2 shadow-md" style={{ borderColor: '#ff6b00' }}>
         <div className="mx-auto max-w-7xl px-4">
           {/* Top Bar - Desktop */}
           <div className="hidden lg:flex items-center gap-4 py-4">
-            <Link to="/" className="text-xl font-bold flex-shrink-0" style={{ color: '#ff6b00' }}>
+            <Link to="/" className="text-2xl font-bold flex-shrink-0 hover:scale-105 transition-transform" style={{ color: '#ff6b00' }}>
               AutoParts
             </Link>
             <DepartmentsMenu />
@@ -169,7 +175,6 @@ function App() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2 rounded hover:bg-zinc-100 transition-colors"
                   >
-                    <span>🏠</span>
                     <span>Ofertas</span>
                   </Link>
                   <Link
@@ -177,7 +182,6 @@ function App() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2 rounded hover:bg-zinc-100 transition-colors"
                   >
-                    <span>📂</span>
                     <span>Categorias</span>
                   </Link>
                   <Link

@@ -1,29 +1,34 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { Link } from 'react-router-dom'
+import { Category } from '../constants/categories'
 
 const DEPARTMENTS: Array<{ title: string; items: Array<{ label: string; href: string }> }> = [
   {
     title: 'Pneus & Rodas',
     items: [
-      { label: 'Pneus', href: '/buscar?categoria=pneu' },
-      { label: 'Rodas', href: '/buscar?categoria=rodas' },
-      { label: 'Acessórios', href: '/buscar?categoria=acessorios-rodas' },
+      { label: 'Pneus', href: `/buscar?categoria=${Category.PNEUS}` },
+      { label: 'Rodas', href: `/buscar?categoria=${Category.RODAS}` },
     ],
   },
   {
     title: 'Óleo & Filtros',
     items: [
-      { label: 'Óleos', href: '/buscar?categoria=oleo' },
-      { label: 'Filtro de Óleo', href: '/buscar?categoria=filtro-oleo' },
-      { label: 'Filtro de Ar', href: '/buscar?categoria=filtro' },
+      { label: 'Óleos', href: `/buscar?categoria=${Category.OLEOS}` },
+      { label: 'Filtros', href: `/buscar?categoria=${Category.FILTROS}` },
     ],
   },
   {
     title: 'Freios & Suspensão',
     items: [
-      { label: 'Pastilhas', href: '/buscar?categoria=freio' },
-      { label: 'Discos', href: '/buscar?categoria=disco' },
-      { label: 'Amortecedores', href: '/buscar?categoria=suspensao' },
+      { label: 'Freios', href: `/buscar?categoria=${Category.FREIOS}` },
+      { label: 'Suspensão', href: `/buscar?categoria=${Category.SUSPENSAO}` },
+    ],
+  },
+  {
+    title: 'Motor & Elétrica',
+    items: [
+      { label: 'Motor', href: `/buscar?categoria=${Category.MOTOR}` },
+      { label: 'Elétrica', href: `/buscar?categoria=${Category.ELETRICA}` },
     ],
   },
 ]

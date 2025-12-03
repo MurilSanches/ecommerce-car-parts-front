@@ -112,7 +112,6 @@ export default function Component() {
               </div>
               
               <div className="text-center">
-                <div className="text-3xl mb-2">📊</div>
                 <h3 className="font-medium mb-1">Monitoramento</h3>
                 <p className="text-zinc-600 text-sm">Sistemas monitorados 24/7</p>
               </div>

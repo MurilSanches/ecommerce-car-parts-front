@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
+import { AlertCircle } from 'lucide-react'
 
 export default function Component() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center fade-in">
       <div className="text-center">
-        <div className="text-8xl mb-6">🚗</div>
+        <AlertCircle className="w-24 h-24 mx-auto mb-6 text-zinc-400" />
         <h1 className="text-4xl font-bold mb-4">Página não encontrada</h1>
         <p className="text-lg text-zinc-600 mb-8">
           Oops! A página que você está procurando não existe.

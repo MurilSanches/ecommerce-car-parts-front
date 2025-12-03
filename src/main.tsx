@@ -12,10 +12,12 @@ const router = createBrowserRouter([
       { path: '/', lazy: () => import('./pages/Home').then(m => ({ Component: m.default })) },
       { path: '/categorias', lazy: () => import('./pages/Categories').then(m => ({ Component: m.default })) },
       { path: '/buscar', lazy: () => import('./pages/Search').then(m => ({ Component: m.default })) },
-      { path: '/produto/:slug', lazy: () => import('./pages/Product').then(m => ({ Component: m.default })) },
+      { path: '/recomendacoes', lazy: () => import('./pages/Recommendations').then(m => ({ Component: m.default })) },
+      { path: '/produto/:id', lazy: () => import('./pages/Product').then(m => ({ Component: m.default })) },
       { path: '/carrinho', lazy: () => import('./pages/Cart').then(m => ({ Component: m.default })) },
       { path: '/favoritos', lazy: () => import('./pages/Wishlist').then(m => ({ Component: m.default })) },
       { path: '/checkout', lazy: () => import('./pages/Checkout').then(m => ({ Component: m.default })) },
+      { path: '/checkout/sucesso', lazy: () => import('./pages/CheckoutSuccess').then(m => ({ Component: m.default })) },
       { path: '/login', lazy: () => import('./pages/Login').then(m => ({ Component: m.default })) },
       { path: '/register', lazy: () => import('./pages/Register').then(m => ({ Component: m.default })) },
       { path: '/fornecedor/cadastrar', lazy: () => import('./pages/SupplierCreate').then(m => ({ Component: m.default })) },
@@ -43,15 +45,8 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Register service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('SW registered: ', registration)
-      })
-      .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError)
-      })
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
   })
 }

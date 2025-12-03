@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { suppliersService, type Supplier } from '../../services/suppliers'
 import { productsService } from '../../services/products'
 import { useAuthStore } from '../../store/auth'
+import { CATEGORIES } from '../../constants/categories'
+import { CAR_BRANDS } from '../../constants/carBrands'
+import { ImageUpload } from '../../components/ImageUpload'
 
 export default function Component() {
   const navigate = useNavigate()
@@ -10,6 +13,8 @@ export default function Component() {
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([])
+  const [productImages, setProductImages] = useState<string[]>([])
 
   useEffect(() => {
     async function loadSupplier() {
@@ -17,7 +22,6 @@ export default function Component() {
         const mySupplier = await suppliersService.getMySupplier()
         setSupplier(mySupplier)
       } catch (error) {
-        console.error('Erro ao carregar fornecedor:', error)
         navigate('/fornecedor/cadastrar')
       }
     }
@@ -34,7 +38,7 @@ export default function Component() {
 
     try {
       const data = new FormData(e.currentTarget)
-      const productData = {
+      const productData: any = {
         name: String(data.get('name') || ''),
         description: String(data.get('description') || ''),
         price: parseFloat(String(data.get('price') || '0')),
@@ -43,9 +47,13 @@ export default function Component() {
         brand: String(data.get('brand') || ''),
         model: String(data.get('model') || ''),
         year: String(data.get('year') || ''),
-        images: String(data.get('images') || '').split(',').filter(Boolean).map(url => url.trim()),
+        images: productImages,
         specifications: String(data.get('specifications') || ''),
         active: data.get('active') === 'true',
+      }
+      
+      if (selectedBrands.length > 0) {
+        productData.recommendedBrands = selectedBrands
       }
 
       if (!productData.name || !productData.price || !productData.stock || !productData.category || !productData.brand) {
@@ -152,14 +160,20 @@ export default function Component() {
                 <label htmlFor="category" className="block text-sm font-medium text-zinc-700 mb-2">
                   Categoria *
                 </label>
-                <input
+                <select
                   id="category"
                   name="category"
-                  type="text"
                   required
-                  className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none"
-                  placeholder="Ex: Filtros, Pneus, Óleos"
-                />
+                  className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none bg-white"
+                  defaultValue=""
+                >
+                  <option value="" disabled>Selecione uma categoria</option>
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -203,16 +217,32 @@ export default function Component() {
               </div>
 
               <div className="md:col-span-2">
-                <label htmlFor="images" className="block text-sm font-medium text-zinc-700 mb-2">
-                  URLs das Imagens (separadas por vírgula)
-                </label>
-                <input
-                  id="images"
-                  name="images"
-                  type="text"
-                  className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none"
-                  placeholder="https://exemplo.com/imagem1.jpg, https://exemplo.com/imagem2.jpg"
+                <ImageUpload
+                  images={productImages}
+                  onImagesChange={setProductImages}
+                  maxImages={5}
+                  disabled={loading}
                 />
+                {productImages.length === 0 && (
+                  <div className="mt-3">
+                    <label htmlFor="images-fallback" className="block text-sm font-medium text-zinc-700 mb-2">
+                      Ou adicione URLs de imagens manualmente (separadas por vírgula)
+                    </label>
+                    <input
+                      id="images-fallback"
+                      name="images-fallback"
+                      type="text"
+                      className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none"
+                      placeholder="https://exemplo.com/imagem1.jpg, https://exemplo.com/imagem2.jpg"
+                      onChange={(e) => {
+                        const urls = e.target.value.split(',').filter(Boolean).map(url => url.trim())
+                        if (urls.length > 0) {
+                          setProductImages(urls)
+                        }
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -241,6 +271,85 @@ export default function Component() {
                   <option value="true">Ativo</option>
                   <option value="false">Inativo</option>
                 </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Marcas Recomendadas
+                </label>
+                <div className="border border-zinc-300 rounded-md p-4 max-h-64 overflow-y-auto bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs text-zinc-500">
+                      Selecione uma ou mais marcas de carros para as quais este produto é recomendado
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBrands(CAR_BRANDS.map(b => b.value))}
+                        className="text-xs px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+                      >
+                        Selecionar todas
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBrands([])}
+                        className="text-xs px-3 py-1 bg-zinc-200 text-zinc-700 rounded hover:bg-zinc-300 transition-colors"
+                      >
+                        Limpar
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {CAR_BRANDS.map((carBrand) => (
+                      <label
+                        key={carBrand.value}
+                        className="flex items-center gap-2 text-sm cursor-pointer hover:text-orange-500 transition-colors p-2 rounded hover:bg-orange-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedBrands.includes(carBrand.value)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedBrands([...selectedBrands, carBrand.value])
+                            } else {
+                              setSelectedBrands(selectedBrands.filter(b => b !== carBrand.value))
+                            }
+                          }}
+                          className="text-orange-500 focus:ring-orange-500 rounded"
+                        />
+                        <span>{carBrand.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {selectedBrands.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-zinc-200">
+                      <p className="text-xs text-zinc-600 mb-2">
+                        <strong>{selectedBrands.length}</strong> marca{selectedBrands.length !== 1 ? 's' : ''} selecionada{selectedBrands.length !== 1 ? 's' : ''}:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedBrands.map((brandValue) => {
+                          const brand = CAR_BRANDS.find(b => b.value === brandValue)
+                          return (
+                            <span
+                              key={brandValue}
+                              className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium"
+                            >
+                              {brand?.label}
+                              <button
+                                type="button"
+                                onClick={() => setSelectedBrands(selectedBrands.filter(b => b !== brandValue))}
+                                className="hover:text-orange-900"
+                                aria-label={`Remover ${brand?.label}`}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

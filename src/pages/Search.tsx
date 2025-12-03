@@ -2,27 +2,16 @@ import { useState, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { LazyImage } from '../components/LazyImage'
 import { useCartStore } from '../store/cart'
-import { useWishlist } from '../store/wishlist'
 import { productsService, type Product } from '../services/products'
+import { CATEGORIES } from '../constants/categories'
+import { WishlistButton } from '../components/WishlistButton'
 
 const BRANDS = ['Pirelli', 'Michelin', 'Bridgestone', 'Castrol', 'Shell', 'Mann', 'Brembo', 'Monroe']
-const CATEGORIES = [
-  { slug: 'pneus', name: 'Pneus', icon: '🛞' },
-  { slug: 'rodas', name: 'Rodas', icon: '⚙️' },
-  { slug: 'oleos', name: 'Óleos', icon: '🛢️' },
-  { slug: 'filtros', name: 'Filtros', icon: '🔧' },
-  { slug: 'freios', name: 'Freios', icon: '🛑' },
-  { slug: 'suspensao', name: 'Suspensão', icon: '🔩' },
-  { slug: 'motor', name: 'Motor', icon: '⚡' },
-  { slug: 'eletrico', name: 'Elétrico', icon: '🔋' },
-]
 
 export default function Component() {
   const location = useLocation()
   const navigate = useNavigate()
   const addItem = useCartStore((s) => s.addItem)
-  const toggleWish = useWishlist((s) => s.toggle)
-  const hasWish = useWishlist((s) => s.has)
   
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
@@ -76,7 +65,6 @@ export default function Component() {
       setHasMore(!response.last)
       setTotalElements(response.totalElements)
     } catch (error) {
-      console.error('Erro ao carregar produtos:', error)
     } finally {
       setLoading(false)
     }
@@ -143,7 +131,7 @@ export default function Component() {
     <div className="fade-in">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">
-          {categoria ? `Produtos de ${CATEGORIES.find(c => c.slug === categoria)?.name}` : 'Buscar Produtos'}
+          {categoria ? `Produtos de ${CATEGORIES.find(c => c.value === categoria)?.label}` : 'Buscar Produtos'}
         </h1>
           <p className="text-zinc-600">
             {totalElements} produto{totalElements !== 1 ? 's' : ''} encontrado{totalElements !== 1 ? 's' : ''}
@@ -170,16 +158,15 @@ export default function Component() {
             <h3 className="text-sm font-semibold mb-3">Categorias</h3>
             <div className="space-y-2">
               {CATEGORIES.map((cat) => (
-                <label key={cat.slug} className="flex items-center gap-3 text-sm cursor-pointer hover:text-orange-500 transition-colors">
+                <label key={cat.value} className="flex items-center gap-3 text-sm cursor-pointer hover:text-orange-500 transition-colors">
                   <input 
                     type="radio" 
                     name="categoria" 
-                    checked={categoria === cat.slug} 
-                    onChange={() => toggleParam('categoria', cat.slug)}
+                    checked={categoria === cat.value} 
+                    onChange={() => toggleParam('categoria', cat.value)}
                     className="text-orange-500"
                   />
-                  <span className="text-lg">{cat.icon}</span>
-                  <span>{cat.name}</span>
+                  <span>{cat.label}</span>
                 </label>
               ))}
             </div>
@@ -311,13 +298,11 @@ export default function Component() {
 
                     <div className="flex items-center justify-between mb-3">
                       <div className="text-lg font-bold">R$ {product.price.toFixed(2)}</div>
-                      <button 
-                        aria-label="wishlist" 
-                        onClick={() => toggleWish(product.id)} 
+                      <WishlistButton 
+                        productId={product.id}
                         className="text-zinc-400 hover:text-orange-500 transition-colors"
-                      >
-                        {hasWish(product.id) ? '♥' : '♡'}
-                      </button>
+                        size="sm"
+                      />
                     </div>
 
                     <button

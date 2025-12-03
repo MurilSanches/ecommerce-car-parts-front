@@ -2,6 +2,11 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { suppliersService } from '../services/suppliers'
 import { useAuthStore } from '../store/auth'
+import { PhoneInput } from '../components/PhoneInput'
+import { removePhoneMask } from '../utils/phoneMask'
+import { CepInput } from '../components/CepInput'
+import { removeCepMask } from '../utils/cepMask'
+import { BRAZILIAN_STATES } from '../constants/states'
 
 export default function Component() {
   const navigate = useNavigate()
@@ -17,15 +22,17 @@ export default function Component() {
 
     try {
       const data = new FormData(e.currentTarget)
+      const phoneRaw = String(data.get('phone') || '')
+      const zipCodeRaw = String(data.get('zipCode') || '')
       const supplierData = {
         name: String(data.get('name') || ''),
         description: String(data.get('description') || ''),
         email: String(data.get('email') || ''),
-        phone: String(data.get('phone') || ''),
+        phone: phoneRaw ? removePhoneMask(phoneRaw) : '',
         address: String(data.get('address') || ''),
         city: String(data.get('city') || ''),
         state: String(data.get('state') || ''),
-        zipCode: String(data.get('zipCode') || ''),
+        zipCode: zipCodeRaw ? removeCepMask(zipCodeRaw) : '',
         country: String(data.get('country') || 'Brasil'),
         contactPerson: String(data.get('contactPerson') || ''),
       }
@@ -120,12 +127,11 @@ export default function Component() {
                 <label htmlFor="phone" className="block text-sm font-medium text-zinc-700 mb-2">
                   Telefone
                 </label>
-                <input
+                <PhoneInput
                   id="phone"
                   name="phone"
-                  type="tel"
                   className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none"
-                  placeholder="(11) 99999-9999"
+                  placeholder="(11) 999999999"
                 />
               </div>
 
@@ -172,26 +178,29 @@ export default function Component() {
                 <label htmlFor="state" className="block text-sm font-medium text-zinc-700 mb-2">
                   Estado
                 </label>
-                <input
+                <select
                   id="state"
                   name="state"
-                  type="text"
-                  maxLength={2}
-                  className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none uppercase"
-                  placeholder="SP"
-                />
+                  className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none bg-white"
+                >
+                  <option value="">Selecione um estado</option>
+                  {BRAZILIAN_STATES.map((state) => (
+                    <option key={state.value} value={state.value}>
+                      {state.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <label htmlFor="zipCode" className="block text-sm font-medium text-zinc-700 mb-2">
                   CEP
                 </label>
-                <input
+                <CepInput
                   id="zipCode"
                   name="zipCode"
-                  type="text"
                   className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none"
-                  placeholder="01234-567"
+                  placeholder="12345-678"
                 />
               </div>
 

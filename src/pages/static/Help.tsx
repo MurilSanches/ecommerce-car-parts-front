@@ -50,7 +50,6 @@ export default function Component() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <div className="card p-6 text-center">
-            <div className="text-4xl mb-4">📦</div>
             <h3 className="text-xl font-semibold mb-2">Pedidos</h3>
             <p className="text-zinc-600 text-sm">
               Acompanhe seus pedidos e saiba mais sobre entregas

@@ -12,7 +12,6 @@ export default function Component() {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 2000))
     
     alert('Mensagem enviada com sucesso! Entraremos em contato em breve.')

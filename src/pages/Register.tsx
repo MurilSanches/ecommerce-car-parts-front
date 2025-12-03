@@ -1,6 +1,8 @@
 import { useAuthStore } from '../store/auth'
 import { useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
+import { PhoneInput } from '../components/PhoneInput'
+import { removePhoneMask } from '../utils/phoneMask'
 
 export default function Component() {
   const status = useAuthStore((s) => s.status)
@@ -19,7 +21,8 @@ export default function Component() {
       const email = String(data.get('email') || '')
       const password = String(data.get('password') || '')
       const confirmPassword = String(data.get('confirmPassword') || '')
-      const phone = String(data.get('phone') || '')
+      const phoneRaw = String(data.get('phone') || '')
+      const phone = phoneRaw ? removePhoneMask(phoneRaw) : ''
       const address = String(data.get('address') || '')
       
       if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -106,12 +109,11 @@ export default function Component() {
               <label htmlFor="phone" className="block text-sm font-medium text-zinc-700 mb-1">
                 Telefone
               </label>
-              <input 
+              <PhoneInput
                 id="phone"
-                name="phone" 
-                type="tel" 
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none" 
-                placeholder="(11) 99999-9999" 
+                name="phone"
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:ring-2 focus:border-orange-500 focus:outline-none"
+                placeholder="(11) 999999999"
               />
             </div>
 
