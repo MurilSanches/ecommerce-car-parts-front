@@ -15,11 +15,20 @@ export type CartItem = {
 export type Cart = {
   id: string
   userId: string
+  name?: string
   items: CartItem[]
   totalAmount: number
   totalItems: number
   createdAt?: string
   updatedAt?: string
+}
+
+export type CreateCartRequest = {
+  name?: string
+  items?: Array<{
+    productId: string
+    quantity: number
+  }>
 }
 
 export type Order = {
@@ -39,12 +48,16 @@ export type Order = {
 }
 
 export const cartService = {
-  async createCart(userId: string): Promise<Cart> {
-    return api.post<Cart>(`/cart/${userId}`)
+  async createCart(userId: string, data?: CreateCartRequest): Promise<Cart> {
+    return api.post<Cart>(`/cart/${userId}`, data)
   },
 
   async getCart(userId: string): Promise<Cart> {
     return api.get<Cart>(`/cart/${userId}`)
+  },
+
+  async listCarts(userId: string): Promise<Cart[]> {
+    return api.get<Cart[]>(`/cart/${userId}/list`)
   },
 
   async addItem(userId: string, productId: string, quantity: number = 1): Promise<Cart> {

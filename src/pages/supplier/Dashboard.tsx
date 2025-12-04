@@ -1,38 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { suppliersService, type Supplier } from '../../services/suppliers'
-import { productsService } from '../../services/products'
+import { dashboardService, type DashboardData } from '../../services/dashboard'
 import { useAuthStore } from '../../store/auth'
-import { User, Home, Package, Plus, Box, BarChart3, DollarSign } from 'lucide-react'
+import { User, Home, Package, Plus, Box, BarChart3, DollarSign, TrendingUp, ShoppingCart, CheckCircle } from 'lucide-react'
 
 export default function Component() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    totalStock: 0,
-    totalValue: 0,
-  })
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
 
   useEffect(() => {
-    async function loadSupplier() {
+    async function loadData() {
       try {
         setLoading(true)
         const mySupplier = await suppliersService.getMySupplier()
         setSupplier(mySupplier)
 
-        const productsResponse = await productsService.getBySupplier(mySupplier.id, 0, 1000)
-        const products = productsResponse.content
-        const totalStock = products.reduce((sum, p) => sum + p.stock, 0)
-        const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0)
-
-        setStats({
-          totalProducts: products.length,
-          totalStock,
-          totalValue,
-        })
+        const dashboard = await dashboardService.getDashboard()
+        setDashboardData(dashboard)
       } catch (error) {
         navigate('/fornecedor/cadastrar')
       } finally {
@@ -41,7 +29,7 @@ export default function Component() {
     }
 
     if (user) {
-      loadSupplier()
+      loadData()
     }
   }, [user, navigate])
 
@@ -71,44 +59,171 @@ export default function Component() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="card p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-zinc-600 mb-1">Total de Produtos</p>
-              <p className="text-3xl font-bold">{stats.totalProducts}</p>
+      {/* Estatísticas de Estoque */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Estatísticas de Estoque</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-600 mb-1">Total de Produtos</p>
+                <p className="text-3xl font-bold">{dashboardData?.stockStatistics.totalProducts || 0}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                <Box className="w-6 h-6 text-orange-600" />
+              </div>
             </div>
-            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-              <Box className="w-6 h-6 text-orange-600" />
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-600 mb-1">Estoque Total</p>
+                <p className="text-3xl font-bold">{dashboardData?.stockStatistics.totalStock || 0}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-600 mb-1">Produtos Ativos</p>
+                <p className="text-3xl font-bold">{dashboardData?.stockStatistics.activeProducts || 0}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-600 mb-1">Produtos Inativos</p>
+                <p className="text-3xl font-bold">{dashboardData?.stockStatistics.inactiveProducts || 0}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <Box className="w-6 h-6 text-red-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-600 mb-1">Valor Total em Estoque</p>
+                <p className="text-2xl font-bold">R$ {dashboardData?.stockStatistics.totalStockValue.toFixed(2) || '0.00'}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-orange-600" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="card p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-zinc-600 mb-1">Estoque Total</p>
-              <p className="text-3xl font-bold">{stats.totalStock}</p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-orange-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-zinc-600 mb-1">Valor Total em Estoque</p>
-              <p className="text-3xl font-bold">R$ {stats.totalValue.toFixed(2)}</p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-orange-600" />
+        {dashboardData?.stockStatistics.stockByCategory && Object.keys(dashboardData.stockStatistics.stockByCategory).length > 0 && (
+          <div className="card p-6 mt-6">
+            <h3 className="text-lg font-semibold mb-4">Estoque por Categoria</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(dashboardData.stockStatistics.stockByCategory).map(([category, stock]) => (
+                <div key={category} className="border-l-4 border-orange-500 pl-3">
+                  <p className="text-sm text-zinc-600">{category}</p>
+                  <p className="text-xl font-bold">{stock}</p>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Estatísticas de Vendas */}
+      {dashboardData?.salesStatistics && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Estatísticas de Vendas</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-zinc-600 mb-1">Total de Pedidos</p>
+                  <p className="text-3xl font-bold">{dashboardData.salesStatistics.totalOrders}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                  <ShoppingCart className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-zinc-600 mb-1">Itens Vendidos</p>
+                  <p className="text-3xl font-bold">{dashboardData.salesStatistics.totalItemsSold}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <Package className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-zinc-600 mb-1">Receita Total</p>
+                  <p className="text-2xl font-bold">R$ {dashboardData.salesStatistics.totalRevenue.toFixed(2)}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-emerald-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-zinc-600 mb-1">Ticket Médio</p>
+                  <p className="text-2xl font-bold">R$ {dashboardData.salesStatistics.averageOrderValue.toFixed(2)}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {dashboardData.salesStatistics.ordersByStatus && Object.keys(dashboardData.salesStatistics.ordersByStatus).length > 0 && (
+            <div className="card p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-4">Pedidos por Status</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {Object.entries(dashboardData.salesStatistics.ordersByStatus).map(([status, count]) => (
+                  <div key={status} className="border-l-4 border-blue-500 pl-3">
+                    <p className="text-sm text-zinc-600">{status}</p>
+                    <p className="text-xl font-bold">{count}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {dashboardData.salesStatistics.revenueByMonth && Object.keys(dashboardData.salesStatistics.revenueByMonth).length > 0 && (
+            <div className="card p-6">
+              <h3 className="text-lg font-semibold mb-4">Receita por Mês</h3>
+              <div className="space-y-3">
+                {Object.entries(dashboardData.salesStatistics.revenueByMonth)
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([month, revenue]) => (
+                    <div key={month} className="flex items-center justify-between p-3 bg-zinc-50 rounded-lg">
+                      <span className="font-medium">{month}</span>
+                      <span className="text-lg font-bold text-orange-600">R$ {revenue.toFixed(2)}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

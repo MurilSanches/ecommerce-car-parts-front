@@ -69,7 +69,19 @@ export const uploadImage = async (file: File, folder: string = 'products'): Prom
     .from('product-images')
     .getPublicUrl(data.path)
 
+  if (!publicUrl) {
+    throw new Error('Não foi possível gerar URL pública da imagem')
+  }
+
   return publicUrl
+}
+
+export const getImageUrl = (filePath: string): string => {
+  if (!supabaseUrl) {
+    throw new Error('Supabase URL não está configurada')
+  }
+
+  return `${supabaseUrl}/storage/v1/object/public/product-images/${filePath}`
 }
 
 export const deleteImage = async (filePath: string): Promise<void> => {

@@ -115,16 +115,20 @@ A aplicação estará disponível em: `http://localhost:8080`
 - `DELETE /api/suppliers/{id}` - Excluir fornecedor (requer header `X-User-Id`, apenas o dono)
 
 ### Carrinho
-- `POST /api/cart/{userId}` - Criar carrinho para o usuário
-- `GET /api/cart/{userId}` - Obter carrinho do usuário
+- `POST /api/cart/{userId}?name={nome}` - Criar carrinho para o usuário (nome opcional)
+- `GET /api/cart/{userId}` - Obter primeiro carrinho do usuário
+- `GET /api/cart/{userId}/list` - Listar todos os carrinhos do usuário
 - `POST /api/cart/{userId}/add?productId={id}&quantity={qty}` - Adicionar item
 - `PUT /api/cart/{userId}/update?productId={id}&quantity={qty}` - Atualizar quantidade
 - `DELETE /api/cart/{userId}/remove?productId={id}` - Remover item
 - `DELETE /api/cart/{userId}/clear` - Limpar carrinho
 - `POST /api/cart/{userId}/checkout` - Finalizar compra (reduz estoque e cria pedido)
 
-### Pedidos
-- `GET /api/orders/{userId}` - Listar pedidos do usuário (a ser implementado)
+### Dashboard
+- `GET /api/dashboard` - Obter estatísticas do fornecedor (requer header `X-User-Id`)
+
+### Dashboard
+- `GET /api/dashboard` - Obter estatísticas do fornecedor (requer header `X-User-Id`)
 
 ## Exemplos de Uso
 
@@ -229,7 +233,11 @@ Body:
   "brand": "Mann",
   "model": "W712/75",
   "year": "2020-2023",
-  "images": ["https://example.com/filtro.jpg"],
+  "images": [
+    "https://example.com/filtro1.jpg",
+    "https://example.com/filtro2.jpg",
+    "https://example.com/filtro3.jpg"
+  ],
   "specifications": "Compatível com motores 1.0",
   "recommendedBrands": ["VOLKSWAGEN", "FIAT", "FORD"]
 }
@@ -239,6 +247,7 @@ Body:
 - Não é necessário informar `supplierId`
 - O usuário deve ter um fornecedor criado antes de criar produtos
 - O campo `recommendedBrands` é opcional e aceita um array de valores do enum CarBrand (ex: ["VOLKSWAGEN", "FIAT", "FORD"])
+- O campo `images` é opcional e aceita um array de URLs válidas (http:// ou https://). Cada URL é validada ao criar ou atualizar o produto
 
 ### Consultar Carro por Placa
 ```
@@ -317,6 +326,22 @@ GET /api/products?recommendedBrands=VOLKSWAGEN&recommendedBrands=FIAT&page=0&siz
 ### Criar Carrinho
 ```
 POST /api/cart/user_id_here
+Content-Type: application/json
+
+Body (opcional):
+{
+  "name": "Carrinho Principal",
+  "items": [
+    {
+      "productId": "product_id_1",
+      "quantity": 2
+    },
+    {
+      "productId": "product_id_2",
+      "quantity": 1
+    }
+  ]
+}
 ```
 
 **Resposta:**
@@ -324,18 +349,88 @@ POST /api/cart/user_id_here
 {
   "id": "cart_id_here",
   "user": { ... },
-  "items": [],
-  "totalAmount": 0.00,
-  "totalItems": 0,
+  "name": "Carrinho Principal",
+  "items": [
+    {
+      "product": { ... },
+      "quantity": 2,
+      "unitPrice": 25.90,
+      "totalPrice": 51.80
+    },
+    {
+      "product": { ... },
+      "quantity": 1,
+      "unitPrice": 15.50,
+      "totalPrice": 15.50
+    }
+  ],
+  "totalAmount": 67.30,
+  "totalItems": 3,
   "createdAt": "2024-01-15T10:30:00",
   "updatedAt": "2024-01-15T10:30:00"
 }
 ```
 
 **Nota:**
-- Cria um carrinho vazio para o usuário especificado
-- Se já existir um carrinho para o usuário, retorna erro
-- O carrinho também é criado automaticamente ao adicionar o primeiro item
+- Cria um carrinho para o usuário especificado
+- O body é opcional - se não enviar, cria um carrinho vazio
+- O campo `name` é opcional e permite identificar diferentes carrinhos
+- O campo `items` é opcional - permite adicionar múltiplos produtos de uma vez
+- Um usuário pode ter múltiplos carrinhos
+- Se fornecer um nome e já existir um carrinho com esse nome, retorna erro
+- Valida estoque e disponibilidade de todos os produtos antes de criar o carrinho
+- O carrinho também é criado automaticamente ao adicionar o primeiro item (sem nome)
+
+### Listar Carrinhos do Usuário
+```
+GET /api/cart/user_id_here/list
+```
+
+Retorna uma lista com todos os carrinhos do usuário.
+
+### Dashboard (Estatísticas)
+```
+GET /api/dashboard
+Headers:
+  X-User-Id: user_id_here
+```
+
+**Resposta:**
+```json
+{
+  "stockStatistics": {
+    "totalProducts": 50,
+    "totalStock": 500,
+    "activeProducts": 45,
+    "inactiveProducts": 5,
+    "totalStockValue": 125000.00,
+    "stockByCategory": {
+      "Filtros": 100,
+      "Pneus": 200,
+      "Óleos": 50
+    }
+  },
+  "salesStatistics": {
+    "totalOrders": 25,
+    "totalItemsSold": 150,
+    "totalRevenue": 50000.00,
+    "averageOrderValue": 2000.00,
+    "ordersByStatus": {
+      "CONFIRMED": 20,
+      "DELIVERED": 5
+    },
+    "revenueByMonth": {
+      "2024-01": 25000.00,
+      "2024-02": 25000.00
+    }
+  }
+}
+```
+
+**Nota:**
+- Retorna estatísticas do fornecedor vinculado ao usuário
+- Estatísticas de estoque: total de produtos, estoque total, valor total do estoque, estoque por categoria
+- Estatísticas de vendas: total de pedidos, itens vendidos, receita total, valor médio por pedido, pedidos por status, receita por mês
 
 ### Adicionar ao Carrinho
 ```

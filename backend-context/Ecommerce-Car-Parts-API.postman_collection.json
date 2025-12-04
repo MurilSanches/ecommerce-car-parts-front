@@ -88,7 +88,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Filtro de Óleo\",\n  \"description\": \"Filtro de óleo para motor 1.0\",\n  \"price\": 25.90,\n  \"stock\": 100,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\"https://example.com/filtro.jpg\"],\n  \"specifications\": \"Compatível com motores 1.0\",\n  \"recommendedBrands\": [\"VOLKSWAGEN\", \"FIAT\", \"FORD\"]\n}"
+							"raw": "{\n  \"name\": \"Filtro de Óleo\",\n  \"description\": \"Filtro de óleo para motor 1.0\",\n  \"price\": 25.90,\n  \"stock\": 100,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\n    \"https://example.com/filtro1.jpg\",\n    \"https://example.com/filtro2.jpg\",\n    \"https://example.com/filtro3.jpg\"\n  ],\n  \"specifications\": \"Compatível com motores 1.0\",\n  \"recommendedBrands\": [\"VOLKSWAGEN\", \"FIAT\", \"FORD\"]\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/products",
@@ -184,7 +184,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Filtro de Óleo Atualizado\",\n  \"description\": \"Filtro de óleo para motor 1.0 - Atualizado\",\n  \"price\": 29.90,\n  \"stock\": 150,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\"https://example.com/filtro.jpg\"],\n  \"specifications\": \"Compatível com motores 1.0\",\n  \"recommendedBrands\": [\"VOLKSWAGEN\", \"FIAT\", \"FORD\"]\n}"
+							"raw": "{\n  \"name\": \"Filtro de Óleo Atualizado\",\n  \"description\": \"Filtro de óleo para motor 1.0 - Atualizado\",\n  \"price\": 29.90,\n  \"stock\": 150,\n  \"category\": \"Filtros\",\n  \"brand\": \"Mann\",\n  \"model\": \"W712/75\",\n  \"year\": \"2020-2023\",\n  \"images\": [\n    \"https://example.com/filtro1.jpg\",\n    \"https://example.com/filtro2.jpg\"\n  ],\n  \"specifications\": \"Compatível com motores 1.0\",\n  \"recommendedBrands\": [\"VOLKSWAGEN\", \"FIAT\", \"FORD\"]\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/products/{{product_id}}",
@@ -656,7 +656,21 @@
 					"name": "Criar Carrinho",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Carrinho Principal\",\n  \"items\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"quantity\": 2\n    },\n    {\n      \"productId\": \"product_id_2\",\n      \"quantity\": 1\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{base_url}}/api/cart/{{user_id}}",
 							"host": [
@@ -668,7 +682,27 @@
 								"{{user_id}}"
 							]
 						},
-						"description": "Cria um carrinho vazio para o usuário especificado. Se já existir um carrinho para o usuário, retorna erro. O carrinho também é criado automaticamente ao adicionar o primeiro item."
+						"description": "Cria um carrinho para o usuário especificado. O body é opcional - se não enviar, cria um carrinho vazio. O campo 'name' é opcional e permite identificar diferentes carrinhos. O campo 'items' é opcional - permite adicionar múltiplos produtos de uma vez. Um usuário pode ter múltiplos carrinhos. Se fornecer um nome e já existir um carrinho com esse nome, retorna erro. Valida estoque e disponibilidade de todos os produtos antes de criar o carrinho. O carrinho também é criado automaticamente ao adicionar o primeiro item (sem nome)."
+					}
+				},
+				{
+					"name": "Listar Carrinhos do Usuário",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/cart/{{user_id}}/list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{user_id}}",
+								"list"
+							]
+						},
+						"description": "Retorna uma lista com todos os carrinhos do usuário"
 					}
 				},
 				{
@@ -822,7 +856,37 @@
 					}
 				}
 			],
-			"description": "Endpoints para gerenciamento do carrinho de compras. Todos os endpoints requerem o userId como parâmetro de path."
+			"description": "Endpoints para gerenciamento do carrinho de compras. Todos os endpoints requerem o userId como parâmetro de path. Um usuário pode ter múltiplos carrinhos."
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Obter Estatísticas do Fornecedor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{user_id}}",
+								"description": "ID do usuário autenticado"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard"
+							]
+						},
+						"description": "Retorna estatísticas do fornecedor vinculado ao usuário, incluindo estatísticas de estoque (total de produtos, estoque total, valor total do estoque, estoque por categoria) e estatísticas de vendas (total de pedidos, itens vendidos, receita total, valor médio por pedido, pedidos por status, receita por mês). Requer header X-User-Id."
+					}
+				}
+			],
+			"description": "Endpoints para visualizar estatísticas e métricas do fornecedor"
 		}
 	],
 	"variable": [

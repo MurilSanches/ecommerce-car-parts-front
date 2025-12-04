@@ -183,14 +183,46 @@ src/
 - **Instalável** em dispositivos móveis
 - **Offline ready** (básico)
 
+## 📸 Upload de Imagens (Supabase)
+
+O sistema integra com Supabase Storage para upload de imagens de produtos:
+
+- **Upload autenticado** usando Service Role Key
+- **URLs públicas** para acesso às imagens
+- **Bucket**: `product-images` (deve ser configurado como público)
+
+Para mais detalhes, consulte [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)
+
 ## 🔧 Configuração
 
 ### **Variáveis de Ambiente**
 ```bash
-# .env.local
-VITE_API_URL=https://api.autoparts.com
-VITE_APP_NAME=AutoParts
+# .env
+# API Configuration
+VITE_API_BASE_URL=http://localhost:8081/api
+
+# Supabase Configuration (para upload de imagens)
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua-chave-anon-aqui
+VITE_SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key-aqui
 ```
+
+### **Configuração do Supabase**
+
+1. **Criar o bucket:**
+   - Acesse o Dashboard do Supabase
+   - Vá em **Storage** > **New bucket**
+   - Nome: `product-images`
+   - **IMPORTANTE**: Marque como **Public bucket** para permitir acesso público às imagens
+
+2. **Obter as chaves:**
+   - Vá em **Settings** > **API**
+   - Copie a `anon public` key para `VITE_SUPABASE_ANON_KEY`
+   - Copie a `service_role` `secret` key para `VITE_SUPABASE_SERVICE_ROLE_KEY`
+
+3. **Políticas RLS (Opcional):**
+   - Se o bucket for público, as políticas RLS não são necessárias para leitura
+   - Para uploads, a Service Role Key bypassa as políticas RLS automaticamente
 
 ### **Tailwind CSS**
 ```typescript

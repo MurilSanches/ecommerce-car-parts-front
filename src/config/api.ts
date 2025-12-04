@@ -35,7 +35,8 @@ export const api = {
       method === 'POST' || 
       method === 'PUT' || 
       method === 'DELETE' ||
-      endpoint.includes('/suppliers/me')
+      endpoint.includes('/suppliers/me') ||
+      endpoint.includes('/dashboard')
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
